@@ -93,7 +93,7 @@ public class FileSystemEncryptionService implements EncryptionService {
         byte[] plain = cipherHandler.decrypt(cipher, iv, key, mac);
         String skuska = new String(plain);
         System.out.println(skuska);
-        System.out.println("----------------done----------------");
+        System.out.println("----------------done decrypt----------------");
 
     }
 }
