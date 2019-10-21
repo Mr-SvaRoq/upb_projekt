@@ -61,10 +61,10 @@ public class FileUploadController {
         //this.storageService.store(file,"kokot");
         switch(action) {
             case "encrypt":
-                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename()));
+                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename(), false));
                 break;
             case "decrypt":
-                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename()));
+                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename(), true));
                 break;
             default:
                 System.out.println("Nieco sa pokazilo...");

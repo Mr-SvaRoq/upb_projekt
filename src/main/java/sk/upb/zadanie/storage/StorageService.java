@@ -13,7 +13,7 @@ public interface StorageService {
 
     Stream<Path> loadAll();
 
-    Path load(String filename);
+    Path load(String filename, boolean decMode);
 
     Resource loadAsResource(String filename) throws java.io.FileNotFoundException;
 

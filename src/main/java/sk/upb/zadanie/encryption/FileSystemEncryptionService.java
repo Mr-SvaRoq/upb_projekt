@@ -9,9 +9,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Array;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -24,9 +26,8 @@ public class FileSystemEncryptionService implements EncryptionService {
     private final CipherHandler cipherHandler = new CipherHandler();
     private final SecretKey key;
     private final SecretKey mac;
-    private byte [] iv ;
-    private byte [] cipher;
-
+    private byte[] iv;
+    private byte[] cipher;
 
 
     //TODO zmenit, vyriesit ako to bude presne
@@ -38,18 +39,9 @@ public class FileSystemEncryptionService implements EncryptionService {
     }
 
     public void encrypt(MultipartFile file, Path filePath) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException {
-//        String text = this.readFile(filePath);
-//        byte[] plainText = text.getBytes();
-
-//        //Overenie, ci cita subor
-//        String skuska = new String(file.getBytes());
-//        this.writeToFile(skuska, filePath);
-
-        //        String skuska = new String(file.getBytes()); alebo toto, ak string
+        //TODO tu bude problem s velkym suborom podla mojho nazoru
         byte[] plainText = file.getBytes();
         this.iv = this.cipherHandler.generateInitialVector();
-//        SecretKey key = this.cipherHandler.generateSecretKey();
-//        SecretKey mac = this.cipherHandler.generateMacKey();
         this.cipher = this.cipherHandler.doEncrypt(iv, key, mac, plainText);
         String cipherAssString = new String(cipher);
         System.out.println("Cipher of plain text: " + cipherAssString);
@@ -57,7 +49,6 @@ public class FileSystemEncryptionService implements EncryptionService {
     }
 
     public String readFile(Path filePath) throws IOException {
-        //TODO nie filepath, kedze sa to este neopladovalo
         File file = new File(filePath.toString());
         String plainText = "";
 
@@ -66,13 +57,12 @@ public class FileSystemEncryptionService implements EncryptionService {
 //            BufferedReader buffer;
 //            for(buffer = new BufferedReader(new FileReader(file)); (str = buffer.readLine()) != null; plainText = plainText + str) {
 //            }
-
+            //REFAKTOR KVOLI DEBUGGERU, ak chces, tak si to daj naspat
             BufferedReader buffer = new BufferedReader(new FileReader(file));
             String str;
-            while((str = buffer.readLine()) != null) {
+            while ((str = buffer.readLine()) != null) {
                 plainText += str;
             }
-
             buffer.close();
             return plainText;
         } catch (FileNotFoundException var6) {
@@ -91,9 +81,8 @@ public class FileSystemEncryptionService implements EncryptionService {
     public void decrypt(MultipartFile file, Path filePath) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         byte[] plainText = file.getBytes();
         byte[] plain = cipherHandler.decrypt(cipher, iv, key, mac);
-        String skuska = new String(plain);
-        System.out.println(skuska);
+        String decipheredText = new String(plain);
+        writeToFile(decipheredText, filePath);
         System.out.println("----------------done decrypt----------------");
-
     }
 }

@@ -56,18 +56,8 @@ public class CipherHandler {
         return this.concatCipherToSingleMessage(iv, cipherText, mac);
     }
 
-    public String doDecrypt(String strToDecrypt, final SecretKey secretKey) {
-//        try {
-//            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-//            cipher.init(2, secretKey);
-//            return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
-//        } catch (Exception var4) {
-//            System.out.println("Error while decrypting: " + var4.toString());
-            return null;
-//        }
-    }
-
     public byte[] decrypt(final byte[] cipherText, final byte[] initialVector, final SecretKey key, final SecretKey macKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+        // java.lang.NullPointerException: null
         ByteBuffer buf = ByteBuffer.wrap(cipherText);
 
         int ivLength = buf.getInt();
