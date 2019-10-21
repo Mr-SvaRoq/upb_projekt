@@ -27,9 +27,15 @@ public class FileSystemEncryptionService implements EncryptionService {
     }
 
     public void encrypt(MultipartFile file, Path filePath) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException {
-        String text = this.readFile(filePath);
-        System.out.println(text);
-        byte[] plainText = text.getBytes();
+//        String text = this.readFile(filePath);
+//        byte[] plainText = text.getBytes();
+
+//        //Overenie, ci cita subor
+//        String skuska = new String(file.getBytes());
+//        this.writeToFile(skuska, filePath);
+
+        //        String skuska = new String(file.getBytes()); alebo toto, ak string
+        byte[] plainText = file.getBytes();
         byte[] iv = this.cipherHandler.generateInitialVector();
         SecretKey key = this.cipherHandler.generateSecretKey();
         SecretKey mac = this.cipherHandler.generateMacKey();
