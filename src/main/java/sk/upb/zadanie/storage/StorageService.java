@@ -17,5 +17,7 @@ public interface StorageService {
 
     Resource loadAsResource(String filename) throws java.io.FileNotFoundException;
 
+    String createUniqueName(String filename);
+
     void deleteAll();
 }

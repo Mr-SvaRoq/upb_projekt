@@ -4,7 +4,10 @@ package sk.upb.zadanie;
     import java.security.InvalidAlgorithmParameterException;
     import java.security.InvalidKeyException;
     import java.security.NoSuchAlgorithmException;
+    import java.sql.SQLOutput;
     import java.util.stream.Collectors;
+
+    import org.apache.commons.io.FilenameUtils;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.core.io.Resource;
     import org.springframework.http.ResponseEntity;
@@ -52,22 +55,27 @@ public class FileUploadController {
         return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
     }
 
+    @GetMapping({"/generate_key"})
+//    public ResponseEntity<Resource> generateKeyFile() throws java.io.FileNotFoundException {
+//
+//        Resource file = this.storageService.loadAsResource(filename);
+//        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
+//    }
+
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        String extension = file.getContentType();
-        //throw new FileNotFoundException(extension);
-        //this.storageService.store(file,"kokot");
-        switch(action) {
-            case "encrypt":
-                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename()));
-                break;
-            case "decrypt":
-                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename()));
-                break;
-            default:
-                System.out.println("Nieco sa dojebalo...");
-        }
-        redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
+        this.storageService.store(file,storageService.createUniqueName(file.getOriginalFilename()));
+//        switch(action) {
+//            case "encrypt":
+//                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename()));
+//                break;
+//            case "decrypt":
+//                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename()));
+//                break;
+//            default:
+//                System.out.println("Nieco sa dojebalo...");
+//        }
+//        redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
         return "redirect:/project";
     }
 

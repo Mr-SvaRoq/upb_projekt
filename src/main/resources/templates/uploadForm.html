@@ -8,12 +8,27 @@
 <div>
     <form id="form" method="POST" enctype="multipart/form-data" action="/">
         <table>
-            <tr><td>File to upload:</td><td><input type="file" name="file" /></td>
-                <td><select name="action">
+            <tr>
+                <td>File to upload:</td><td><input type="file" name="file" required/></td>
+            </tr>
+            <tr>
+                <td>Key to upload:</td><td><input type="file" name="key" required/></td>
+            </tr>
+            <tr>
+                <td>
+                    <select name="action">
                     <option value="encrypt">Encrypt</option>
                     <option value="decrypt">Decrypt</option>
-                </select> </td></tr>
-            <tr><td></td><td><input type="submit" value="Upload file!" /></td>
+                </select>
+                </td>
+                <td><input type="submit" value="Upload file and key!" /></td>
+            </tr>
+            <tr>
+                <td>Doesn't have a key? Generate one!</td><td><a href="/generate_key">Generate key</a></td>
+            </tr>
+            <tr>
+                <td colspan="2" style="font-size: small">Don't lose generated keys, because you will never <br>get to the content of your files again... File <br>encrypted with one key can be decrypted <br>only with same key!</td>
+            </tr>
         </table>
     </form>
 </div>
@@ -21,7 +36,7 @@
 <div>
     <ul>
         <li th:each="file : ${files}">
-            <a th:href="${file}" th:text="${file}" />
+            <a th:href="${file}" th:text="${file.substring(file.lastIndexOf('/') + 8)}" />
         </li>
     </ul>
 </div>
