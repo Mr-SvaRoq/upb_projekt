@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -27,9 +28,12 @@ public class FileSystemEncryptionService implements EncryptionService {
 
     public void encrypt(MultipartFile file, Path filePath) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         String text = this.readFile(filePath);
+        System.out.println(text);
         byte[] plainText = text.getBytes();
         byte[] iv = this.cipherHandler.generateInitialVector();
-        byte[] cipher = this.cipherHandler.doEncrypt(iv, this.key, plainText);
+        SecretKey key = this.cipherHandler.generateSecretKey();
+        SecretKey mac = this.cipherHandler.generateMacKey();
+        byte[] cipher = this.cipherHandler.doEncrypt(iv, key, mac, plainText);
         String cipherAssString = new String(cipher);
         System.out.println("Cipher of plain text: " + cipherAssString);
         this.writeToFile(cipherAssString, filePath);
@@ -40,9 +44,15 @@ public class FileSystemEncryptionService implements EncryptionService {
         String plainText = "";
 
         try {
+//            String str;
+//            BufferedReader buffer;
+//            for(buffer = new BufferedReader(new FileReader(file)); (str = buffer.readLine()) != null; plainText = plainText + str) {
+//            }
+
+            BufferedReader buffer = new BufferedReader(new FileReader(file));
             String str;
-            BufferedReader buffer;
-            for(buffer = new BufferedReader(new FileReader(file)); (str = buffer.readLine()) != null; plainText = plainText + str) {
+            while((str = buffer.readLine()) != null) {
+                plainText += str;
             }
 
             buffer.close();
@@ -64,5 +74,7 @@ public class FileSystemEncryptionService implements EncryptionService {
         String text = this.readFile(filePath);
         String noCipher = this.cipherHandler.doDecrypt(text, this.key);
         this.writeToFile(noCipher, filePath);
+//        byte[] plain = cipherHandler.decrypt(cipher, iv, key, mac);
+
     }
 }

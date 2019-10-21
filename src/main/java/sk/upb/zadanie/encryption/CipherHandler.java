@@ -1,16 +1,9 @@
 package sk.upb.zadanie.encryption;
 
 import java.nio.ByteBuffer;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.security.*;
 import java.util.Base64;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -32,10 +25,17 @@ public class CipherHandler {
         return iv;
     }
 
-    public byte[] doEncrypt(final byte[] iv, final SecretKey secretKey, final byte[] plainText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+    public SecretKey generateMacKey() {
+        byte [] key = new byte [32];
+        secureRandom.nextBytes(key);
+        return new SecretKeySpec(key, "HmacSHA256");
+    }
+
+    public byte[] doEncrypt(final byte[] iv, final SecretKey secretKey, final SecretKey macKey, final byte[] plainText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+        final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec gcm = new GCMParameterSpec(128, iv);
-        cipher.init(1, secretKey, gcm);
+        final Mac hmac = Mac.getInstance("HmacSHA256");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcm);
         byte[] cipherText = null;
 
         try {
@@ -46,7 +46,14 @@ public class CipherHandler {
             var9.printStackTrace();
         }
 
-        return this.concatCipherToSingleMessage(iv, cipherText);
+        //mac authentication
+        hmac.init(macKey);
+        hmac.update(iv);
+        hmac.update(cipherText);
+
+        byte [] mac = hmac.doFinal();
+
+        return this.concatCipherToSingleMessage(iv, cipherText, mac);
     }
 
     public String doDecrypt(String strToDecrypt, final SecretKey secretKey) {
@@ -60,10 +67,44 @@ public class CipherHandler {
         }
     }
 
-    private byte[] concatCipherToSingleMessage(final byte[] iv, final byte[] cipherText) {
-        ByteBuffer buffer = ByteBuffer.allocate(4 + iv.length + cipherText.length);
+    public byte[] decrypt(final byte[] cipherText, final byte[] initialVector, final SecretKey key, final SecretKey macKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+        ByteBuffer buf = ByteBuffer.wrap(cipherText);
+
+        int ivLength = buf.getInt();
+
+        byte [] iv = new byte[ivLength];
+        buf.get(iv);
+
+        int macLength = (buf.get());
+        byte [] mac = new byte[macLength];
+        buf.get(mac);
+
+        byte [] cipherT = new byte[buf.remaining()];
+        buf.get(cipherT);
+
+        final Mac hmac = Mac.getInstance("HmacSHA256");
+        hmac.init(macKey);
+        hmac.update(iv);
+        hmac.update(cipherT);
+        byte [] refMac = hmac.doFinal();
+
+        if (!MessageDigest.isEqual(refMac, mac)) {
+            throw new SecurityException("could not authenticate");
+        }
+
+        final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
+
+        return cipher.doFinal(cipherT);
+
+    }
+
+    private byte[] concatCipherToSingleMessage(final byte[] iv, final byte[] cipherText, final byte [] mac) {
+        ByteBuffer buffer = ByteBuffer.allocate(4 + iv.length + 1 + mac.length + cipherText.length);
         buffer.putInt(iv.length);
         buffer.put(iv);
+        buffer.put((byte) mac.length);
+        buffer.put(mac);
         buffer.put(cipherText);
         return buffer.array();
     }
