@@ -54,7 +54,9 @@ public class FileUploadController {
 
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        this.storageService.store(file);
+        String extension = file.getContentType();
+        //throw new FileNotFoundException(extension);
+        //this.storageService.store(file,"kokot");
         switch(action) {
             case "encrypt":
                 this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename()));
