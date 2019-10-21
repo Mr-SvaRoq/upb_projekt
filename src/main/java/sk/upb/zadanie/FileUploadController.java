@@ -24,6 +24,8 @@ package sk.upb.zadanie;
     import sk.upb.zadanie.storage.FileNotFoundException;
     import sk.upb.zadanie.storage.StorageService;
 
+    import javax.crypto.BadPaddingException;
+    import javax.crypto.IllegalBlockSizeException;
     import javax.crypto.NoSuchPaddingException;
 
 @Controller
@@ -53,7 +55,7 @@ public class FileUploadController {
     }
 
     @PostMapping({"/"})
-    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException {
         String extension = file.getContentType();
         //throw new FileNotFoundException(extension);
         //this.storageService.store(file,"kokot");
@@ -65,7 +67,7 @@ public class FileUploadController {
                 this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename()));
                 break;
             default:
-                System.out.println("Nieco sa dojebalo...");
+                System.out.println("Nieco sa pokazilo...");
         }
         redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
         return "redirect:/project";
