@@ -19,7 +19,7 @@ public class ZadanieApplication {
     @Bean
     CommandLineRunner init(StorageService storageService) {
         return (args) -> {
-            System.out.println("Kokot");
+            System.out.println("UPB-zadanie");
             storageService.deleteAll();
             storageService.init();
         };
