@@ -4,10 +4,7 @@ package sk.upb.zadanie;
     import java.security.InvalidAlgorithmParameterException;
     import java.security.InvalidKeyException;
     import java.security.NoSuchAlgorithmException;
-    import java.sql.SQLOutput;
     import java.util.stream.Collectors;
-
-    import org.apache.commons.io.FilenameUtils;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.core.io.Resource;
     import org.springframework.http.ResponseEntity;
@@ -27,6 +24,8 @@ package sk.upb.zadanie;
     import sk.upb.zadanie.storage.FileNotFoundException;
     import sk.upb.zadanie.storage.StorageService;
 
+    import javax.crypto.BadPaddingException;
+    import javax.crypto.IllegalBlockSizeException;
     import javax.crypto.NoSuchPaddingException;
 
 @Controller
@@ -65,6 +64,8 @@ public class FileUploadController {
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         this.storageService.store(file,storageService.createUniqueName(file.getOriginalFilename()));
+//       OLD VERSION, leaving for unexpected behaviour after MERGE
+//        String extension = file.getContentType();
 //        switch(action) {
 //            case "encrypt":
 //                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename()));

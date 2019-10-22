@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,5 +17,5 @@ public interface EncryptionService {
 
     void writeToFile(String text, Path filePath) throws IOException;
 
-    void decrypt(MultipartFile file, Path filePath) throws IOException;
+    void decrypt(MultipartFile file, Path filePath) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException;
 }

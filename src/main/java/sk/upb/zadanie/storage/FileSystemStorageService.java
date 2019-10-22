@@ -66,14 +66,16 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public Path load(String filename) {
+    public Path load(String filename, boolean decMode) {
+        if (decMode)
+            return rootLocation.resolve("Deciphered-" + filename);
         return rootLocation.resolve(filename);
     }
 
     @Override
     public Resource loadAsResource(String filename) throws java.io.FileNotFoundException {
         try {
-            Path file = load(filename);
+            Path file = load(filename, false);
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;
