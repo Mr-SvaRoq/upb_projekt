@@ -6,9 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.opencsv.CSVReader;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -93,10 +98,60 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public String createUniqueName(String filename) {
-        String extension = FilenameUtils.getExtension(filename);
         Random rand = new Random();
         int num = 1000000 + rand.nextInt(9000000);
         return num + filename;
+    }
+
+    @Override
+    public String convertLineToCSVFormat(String[] data) {
+        return Stream.of(data)
+                .map(this::escapeSpecialCharacters)
+                .collect(Collectors.joining(","));
+    }
+
+    @Override
+    public String escapeSpecialCharacters(String data) {
+        String escapedData = data.replaceAll("\\R", " ");
+        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
+            data = data.replace("\"", "\"\"");
+            escapedData = "\"" + data + "\"";
+        }
+        return escapedData;
+    }
+
+    @Override
+    public Boolean convertDataToCSV(List<String[]> data) {
+        //sem len doplnit sposob, aby sa nerpepisoval stale ten subor, ale aby sa donho len pridavalo
+        File csvOutputFile = new File("db.csv");
+        try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
+            data.stream()
+                    .map(this::convertLineToCSVFormat)
+                    .forEach(pw::println);
+        } catch (java.io.FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+        //assertTrue(csvOutputFile.exists());
+
+        return true;
+    }
+
+    @Override
+    public List<List<String>> convertCSVToData(String filename) {
+        List<List<String>> records = new ArrayList<List<String>>();
+        try (CSVReader csvReader = new CSVReader(new FileReader(filename));) {
+            String[] values = null;
+            while ((values = csvReader.readNext()) != null) {
+                records.add(Arrays.asList(values));
+            }
+            return records;
+        } catch (java.io.FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<List<String>>();
     }
 
     @Override

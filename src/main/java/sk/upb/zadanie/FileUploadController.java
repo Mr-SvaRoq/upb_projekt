@@ -4,6 +4,8 @@ package sk.upb.zadanie;
     import java.security.InvalidAlgorithmParameterException;
     import java.security.InvalidKeyException;
     import java.security.NoSuchAlgorithmException;
+    import java.util.ArrayList;
+    import java.util.List;
     import java.util.stream.Collectors;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.core.io.Resource;
@@ -54,7 +56,7 @@ public class FileUploadController {
         return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
     }
 
-    @GetMapping({"/generate_key"})
+//    @GetMapping({"/generate_key"})
 //    public ResponseEntity<Resource> generateKeyFile() throws java.io.FileNotFoundException {
 //
 //        Resource file = this.storageService.loadAsResource(filename);
@@ -62,10 +64,19 @@ public class FileUploadController {
 //    }
 
     @PostMapping({"/"})
-    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        this.storageService.store(file,storageService.createUniqueName(file.getOriginalFilename()));
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") MultipartFile key, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
+        List<String[]> dataLines = new ArrayList<>();
+        dataLines.add(new String[]{ storageService.createUniqueName(file.getOriginalFilename()), "Key1", "Key2" });
+
+        this.storageService.convertDataToCSV(dataLines);
+
+        System.out.println(this.storageService.convertCSVToData("db.csv"));
+
+        //this.storageService.store(file,storageService.createUniqueName(file.getOriginalFilename()));
 //       OLD VERSION, leaving for unexpected behaviour after MERGE
 //        String extension = file.getContentType();
+
+//       Good code, however I am testing so I don't want to use it...
 //        switch(action) {
 //            case "encrypt":
 //                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename()));

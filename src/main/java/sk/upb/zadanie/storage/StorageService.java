@@ -4,6 +4,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 
 public interface StorageService {
@@ -18,6 +19,14 @@ public interface StorageService {
     Resource loadAsResource(String filename) throws java.io.FileNotFoundException;
 
     String createUniqueName(String filename);
+
+    String convertLineToCSVFormat(String[] data);
+
+    String escapeSpecialCharacters(String data);
+
+    Boolean convertDataToCSV(List<String[]> data);
+
+    List<List<String>> convertCSVToData(String filename);
 
     void deleteAll();
 }
