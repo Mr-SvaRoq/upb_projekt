@@ -4,7 +4,6 @@ package sk.upb.zadanie;
     import java.security.InvalidAlgorithmParameterException;
     import java.security.InvalidKeyException;
     import java.security.NoSuchAlgorithmException;
-    import java.util.ArrayList;
     import java.util.Arrays;
     import java.util.List;
     import java.util.stream.Collectors;
@@ -23,7 +22,7 @@ package sk.upb.zadanie;
     import org.springframework.web.multipart.MultipartFile;
     import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
     import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-    import sk.upb.zadanie.encryption.EncryptionService;
+    import sk.upb.zadanie.encryption.IEncryptionService;
     import sk.upb.zadanie.storage.FileNotFoundException;
     import sk.upb.zadanie.storage.StorageService;
 
@@ -34,10 +33,10 @@ package sk.upb.zadanie;
 @Controller
 public class FileUploadController {
     private final StorageService storageService;
-    private final EncryptionService encryptionService;
+    private final IEncryptionService encryptionService;
 
     @Autowired
-    public FileUploadController(StorageService storageService, EncryptionService encryptionService) {
+    public FileUploadController(StorageService storageService, IEncryptionService encryptionService) {
         this.storageService = storageService;
         this.encryptionService = encryptionService;
     }
@@ -67,7 +66,7 @@ public class FileUploadController {
 //    }
 
     @PostMapping({"/"})
-    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") MultipartFile key, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") MultipartFile key, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException {
         //toto pridava nazov suboru a 2 kluce do nasej DB
         //este by podla mna bolo super, ak by sme mali aj DB sifrovanu, lebo to mozu hodnotit
 
@@ -95,16 +94,25 @@ public class FileUploadController {
         //ukladanie suboru s novym menom
 //        this.storageService.store(file,newFilename);
         //switch pre encrypt metodu alebo decrypt
-//        switch(action) {
-//            case "encrypt":
-//                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename()));
-//                break;
-//            case "decrypt":
-//                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename()));
-//                break;
-//            default:
-//                System.out.println("Nieco sa dojebalo...");
-//        }
+        switch(action) {
+            case "encrypt":
+                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename(), false));
+                break;
+            case "decrypt":
+                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename(), true));
+                break;
+            case "encrypt-rsa":
+                System.out.println("encrypt-rsa");
+//                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename(), true));
+                break;
+            case "decrypt-rsa":
+                System.out.println("decrypt-rsa");
+
+                //                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename(), true));
+                break;
+            default:
+                System.out.println("Nieco sa dojebalo...");
+        }
 //        redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
         return "redirect:/project";
     }

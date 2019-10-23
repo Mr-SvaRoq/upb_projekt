@@ -10,7 +10,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import org.springframework.web.multipart.MultipartFile;
 
-public interface EncryptionService {
+public interface IEncryptionService {
     void encrypt(MultipartFile file, Path filePath) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException;
 
     String readFile(Path filePath) throws IOException;

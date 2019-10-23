@@ -1,5 +1,5 @@
 <html xmlns:th="https://www.thymeleaf.org">
-<body>
+<body style="background: black; color: white">
 
 <div th:if="${message}">
     <h2 th:text="${message}"/>
@@ -19,6 +19,9 @@
                     <select name="action">
                     <option value="encrypt">Encrypt</option>
                     <option value="decrypt">Decrypt</option>
+                    <option value="decrypt">Decrypt2</option>
+                    <option value="encrypt-rsa">Encrypt-RSA</option>
+                    <option value="encrypt-rsa">Decrypt-RSA</option>
                 </select>
                 </td>
                 <td><input type="submit" value="Upload file and key!" /></td>

@@ -7,31 +7,31 @@ import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class CipherHandler {
+class CipherHandler {
     SecureRandom secureRandom = new SecureRandom();
 
-    public CipherHandler() {
+    CipherHandler() {
     }
 
-    public SecretKey generateSecretKey() {
+    SecretKey generateSecretKey() {
         byte[] key = new byte[16];
         this.secureRandom.nextBytes(key);
         return new SecretKeySpec(key, "AES");
     }
 
-    public byte[] generateInitialVector() {
+    byte[] generateInitialVector() {
         byte[] iv = new byte[12];
         this.secureRandom.nextBytes(iv);
         return iv;
     }
 
-    public SecretKey generateMacKey() {
+    SecretKey generateMacKey() {
         byte [] key = new byte [32];
         secureRandom.nextBytes(key);
         return new SecretKeySpec(key, "HmacSHA256");
     }
 
-    public byte[] doEncrypt(final byte[] iv, final SecretKey secretKey, final SecretKey macKey, final byte[] plainText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+    byte[] doEncrypt(final byte[] iv, final SecretKey secretKey, final SecretKey macKey, final byte[] plainText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
         final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec gcm = new GCMParameterSpec(128, iv);
         final Mac hmac = Mac.getInstance("HmacSHA256");
@@ -56,7 +56,7 @@ public class CipherHandler {
         return this.concatCipherToSingleMessage(iv, cipherText, mac);
     }
 
-    public byte[] decrypt(final byte[] cipherText, final byte[] initialVector, final SecretKey key, final SecretKey macKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+    byte[] decrypt(final byte[] cipherText, final byte[] initialVector, final SecretKey key, final SecretKey macKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         // java.lang.NullPointerException: null
         ByteBuffer buf = ByteBuffer.wrap(cipherText);
 
