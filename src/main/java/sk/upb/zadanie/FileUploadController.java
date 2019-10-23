@@ -5,6 +5,7 @@ package sk.upb.zadanie;
     import java.security.InvalidKeyException;
     import java.security.NoSuchAlgorithmException;
     import java.util.ArrayList;
+    import java.util.Arrays;
     import java.util.List;
     import java.util.stream.Collectors;
     import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,8 @@ public class FileUploadController {
         return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
     }
 
+
+    //toto by bolo cool, ak by to vedelo vracat privatne kluce napr. ako string
 //    @GetMapping({"/generate_key"})
 //    public ResponseEntity<Resource> generateKeyFile() throws java.io.FileNotFoundException {
 //
@@ -65,18 +68,33 @@ public class FileUploadController {
 
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") MultipartFile key, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        List<String[]> dataLines = new ArrayList<>();
-        dataLines.add(new String[]{ storageService.createUniqueName(file.getOriginalFilename()), "Key1", "Key2" });
+        //toto pridava nazov suboru a 2 kluce do nasej DB
+        //este by podla mna bolo super, ak by sme mali aj DB sifrovanu, lebo to mozu hodnotit
 
-        this.storageService.convertDataToCSV(dataLines);
+        //tu sa zoberie doterajsi zoznam ulozenych suborov
+        List<String[]> dataCSV = this.storageService.convertCSVToData("db.csv");
+        //tu sa generuje nazov noveho suboru
+        String newFilename = storageService.createUniqueName(file.getOriginalFilename());
+        //tu sa prida novy zaznam do listu
+        dataCSV.add(new String[]{ newFilename, "Key1", "Key2" });
+        //zapis do DB
+        this.storageService.convertDataToCSV(dataCSV);
 
-        System.out.println(this.storageService.convertCSVToData("db.csv"));
 
-        //this.storageService.store(file,storageService.createUniqueName(file.getOriginalFilename()));
-//       OLD VERSION, leaving for unexpected behaviour after MERGE
-//        String extension = file.getContentType();
+        //toto je len testovaci output a sucasne navod na sposob, ako iterovat cez DB a ziskavat data
 
-//       Good code, however I am testing so I don't want to use it...
+        //nacitanie listu
+        List<String[]> dataCSV2 = this.storageService.convertCSVToData("db.csv");
+        //iterovanie
+        for (String[] temp : dataCSV2) {
+            //tu sa len pouziva metoda toString() kvoli vypisu, ale realne by tu mal byt vnoreny cyklus alebo pristup cez indexy
+            System.out.println(Arrays.toString(temp));
+        }
+
+        //tento kod je zakomentovany len kvoli testovacim ucelom
+        //ukladanie suboru s novym menom
+//        this.storageService.store(file,newFilename);
+        //switch pre encrypt metodu alebo decrypt
 //        switch(action) {
 //            case "encrypt":
 //                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename()));

@@ -20,6 +20,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,9 +29,12 @@ public class FileSystemStorageService implements StorageService {
 
     private final Path rootLocation;
 
+    private File csvOutputFile;
+
     @Autowired
     public FileSystemStorageService(StorageProperties properties) {
         this.rootLocation = Paths.get(properties.getLocation());
+        this.csvOutputFile = new File("db.csv");
     }
 
     @Override
@@ -122,41 +126,42 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public Boolean convertDataToCSV(List<String[]> data) {
-        //sem len doplnit sposob, aby sa nerpepisoval stale ten subor, ale aby sa donho len pridavalo
-        File csvOutputFile = new File("db.csv");
         try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
             data.stream()
                     .map(this::convertLineToCSVFormat)
                     .forEach(pw::println);
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        //assertTrue(csvOutputFile.exists());
 
         return true;
     }
 
     @Override
-    public List<List<String>> convertCSVToData(String filename) {
-        List<List<String>> records = new ArrayList<List<String>>();
+    public List<String[]> convertCSVToData(String filename) {
+        List<String[]> records = new ArrayList<>();
         try (CSVReader csvReader = new CSVReader(new FileReader(filename));) {
             String[] values = null;
             while ((values = csvReader.readNext()) != null) {
-                records.add(Arrays.asList(values));
+                records.add(values);
             }
             return records;
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return new ArrayList<List<String>>();
     }
 
     @Override
     public void deleteAll() {
         FileSystemUtils.deleteRecursively(rootLocation.toFile());
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter("db.csv");
+            writer.print("");
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

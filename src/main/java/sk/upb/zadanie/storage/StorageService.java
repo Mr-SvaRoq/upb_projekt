@@ -20,13 +20,19 @@ public interface StorageService {
 
     String createUniqueName(String filename);
 
+    //zmeni stringove pole nazvu suboru, kluca a kluca na normalizovany string pre CSV
+    //samostatne sa nepouziva, sucast funkcie convertDataToCSV
     String convertLineToCSVFormat(String[] data);
 
+    //skontroluje string a popripade escapne potrebne charaktre
+    //samostatne sa nepouziva, sucast funkcie convertDataToCSV
     String escapeSpecialCharacters(String data);
 
+    //zapise List stringov do csv
     Boolean convertDataToCSV(List<String[]> data);
 
-    List<List<String>> convertCSVToData(String filename);
+    //Dostane List z csv
+    List<String[]> convertCSVToData(String filename);
 
     void deleteAll();
 }
