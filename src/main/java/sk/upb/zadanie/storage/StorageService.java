@@ -18,7 +18,7 @@ public interface StorageService {
 
     Resource loadAsResource(String filename) throws java.io.FileNotFoundException;
 
-    String createUniqueName(String filename);
+    String createUniqueName();
 
     //zmeni stringove pole nazvu suboru, kluca a kluca na normalizovany string pre CSV
     //samostatne sa nepouziva, sucast funkcie convertDataToCSV

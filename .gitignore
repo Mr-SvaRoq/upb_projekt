@@ -5,7 +5,7 @@ db.csv
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**
-
+lib_jar/*
 ### STS ###
 .apt_generated
 .classpath

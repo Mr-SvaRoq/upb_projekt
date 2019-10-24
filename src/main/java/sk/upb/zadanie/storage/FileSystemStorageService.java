@@ -101,10 +101,10 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public String createUniqueName(String filename) {
+    public String createUniqueName() {
         Random rand = new Random();
         int num = 1000000 + rand.nextInt(9000000);
-        return num + filename;
+        return Integer.toString(num);
     }
 
     @Override

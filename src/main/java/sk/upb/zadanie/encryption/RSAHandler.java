@@ -19,14 +19,14 @@ public class RSAHandler {
 		this.cipher = Cipher.getInstance("RSA");
 	}
 	
-	public PrivateKey getPrivate (PrivateKey privateKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
-		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privateKey.getEncoded());
+	public PrivateKey getPrivate (byte[] privateKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
+		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privateKey);
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		return kf.generatePrivate(spec);
 	}
 	
-	public PublicKey getPublic (final PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
-		X509EncodedKeySpec spec = new X509EncodedKeySpec(publicKey.getEncoded());
+	public PublicKey getPublic (byte[] publicKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		X509EncodedKeySpec spec = new X509EncodedKeySpec(publicKey);
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		return kf.generatePublic(spec);
 	}
