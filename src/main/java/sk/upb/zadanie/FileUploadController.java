@@ -103,15 +103,14 @@ public class FileUploadController {
                 break;
             case "encrypt-rsa":
                 System.out.println("encrypt-rsa");
-//                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename(), true));
+                this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename(), false));
                 break;
             case "decrypt-rsa":
                 System.out.println("decrypt-rsa");
-
-                //                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename(), true));
+                this.encryptionService.decryptRSA(file, this.storageService.load(file.getOriginalFilename(), true));
                 break;
             default:
-                System.out.println("Nieco sa dojebalo...");
+                System.out.println("Nieco sa pokazilo...");
         }
 //        redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
         return "redirect:/project";

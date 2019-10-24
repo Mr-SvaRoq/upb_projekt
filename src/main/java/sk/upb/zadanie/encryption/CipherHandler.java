@@ -65,7 +65,7 @@ class CipherHandler {
         byte [] iv = new byte[ivLength];
         buf.get(iv);
 
-        int macLength = (buf.get());
+        int macLength = (buf.get()); //TODO tu je chybam dava negativny macLength, e.g. macLength = -17
         byte [] mac = new byte[macLength];
         buf.get(mac);
 
