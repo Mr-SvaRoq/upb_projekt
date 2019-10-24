@@ -1,6 +1,6 @@
 package sk.upb.zadanie;
 
-    import java.io.IOException;
+import java.io.IOException;
     import java.nio.ByteBuffer;
     import java.nio.file.Files;
     import java.security.InvalidAlgorithmParameterException;
@@ -74,31 +74,6 @@ public class FileUploadController {
         //toto pridava nazov suboru a 2 kluce do nasej DB
         //este by podla mna bolo super, ak by sme mali aj DB sifrovanu, lebo to mozu hodnotit
 
-        //tu sa zoberie doterajsi zoznam ulozenych suborov
-//        List<String[]> dataCSV = this.storageService.convertCSVToData("db.csv");
-//        //tu sa generuje nazov noveho suboru
-//        String newFilename = storageService.createUniqueName(file.getOriginalFilename());
-//        //tu sa prida novy zaznam do listu
-//        dataCSV.add(new String[]{ newFilename, "Key1", "Key2" });
-//        //zapis do DB
-//        this.storageService.convertDataToCSV(dataCSV);
-//
-//        //toto je len testovaci output a sucasne navod na sposob, ako iterovat cez DB a ziskavat data
-//
-//        //nacitanie listu
-//        List<String[]> dataCSV2 = this.storageService.convertCSVToData("db.csv");
-//        //iterovanie
-//        for (String[] temp : dataCSV2) {
-//            //tu sa len pouziva metoda toString() kvoli vypisu, ale realne by tu mal byt vnoreny cyklus alebo pristup cez indexy
-//            System.out.println(Arrays.toString(temp));
-//        }
-
-
-
-
-
-
-
         //tento kod je zakomentovany len kvoli testovacim ucelom
         //ukladanie suboru s novym menom
 //        this.storageService.store(file,newFilename);
@@ -121,9 +96,6 @@ public class FileUploadController {
 
                 Files.setAttribute(this.storageService.load(file.getOriginalFilename(), false ), "user:key", unique.getBytes());
 
-//                System.out.println((Files.getAttribute(this.storageService.load(file.getOriginalFilename(), false), "user:key")));
-//                System.out.println();
-
                 break;
             case "decrypt-rsa":
                 System.out.println("decrypt-rsa");
@@ -143,7 +115,6 @@ public class FileUploadController {
                 if(secretKey2.equals("")) {
                     throw new FileNotFoundException("File not Found");
                 }
-
 
                 SecretKey original = encryptionService.decryptSecretKey(key, secretKey2);
                 this.encryptionService.decryptRSA(file, this.storageService.load(file.getOriginalFilename(), true), original);
