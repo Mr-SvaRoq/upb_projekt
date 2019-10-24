@@ -89,32 +89,32 @@ public class FileUploadController {
                 System.out.println("encrypt-rsa");
                 String secretKey = this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename(), false), key);
 
-                List<String[]> dataCSV = this.storageService.convertCSVToData("db.csv");
-                String unique = storageService.createUniqueName();
-                dataCSV.add(new String[]{ unique, secretKey });
-                this.storageService.convertDataToCSV(dataCSV);
+//                List<String[]> dataCSV = this.storageService.convertCSVToData("db.csv");
+//                String unique = storageService.createUniqueName();
+//                dataCSV.add(new String[]{ unique, secretKey });
+//                this.storageService.convertDataToCSV(dataCSV);
 
-                Files.setAttribute(this.storageService.load(file.getOriginalFilename(), false ), "user:key", unique.getBytes());
+                Files.setAttribute(this.storageService.load(file.getOriginalFilename(), false ), "user:key", secretKey.getBytes());
 
                 break;
             case "decrypt-rsa":
                 System.out.println("decrypt-rsa");
 ;
-                String id = new String((byte[]) Files.getAttribute(this.storageService.load(file.getOriginalFilename(), false), "user:key"));
+                String secretKey2 = new String((byte[]) Files.getAttribute(this.storageService.load(file.getOriginalFilename(), false), "user:key"));
 
-                String secretKey2 = "";
-
-                List<String[]> dataCSV2 = this.storageService.convertCSVToData("db.csv");
-                for (String[] temp : dataCSV2) {
-                    if (temp[0].equals(id)) {
-                        secretKey2 = temp[1];
-                        break;
-                    }
-                }
-
-                if(secretKey2.equals("")) {
-                    throw new FileNotFoundException("File not Found");
-                }
+//                String secretKey2 = "";
+//
+//                List<String[]> dataCSV2 = this.storageService.convertCSVToData("db.csv");
+//                for (String[] temp : dataCSV2) {
+//                    if (temp[0].equals(id)) {
+//                        secretKey2 = temp[1];
+//                        break;
+//                    }
+//                }
+//
+//                if(secretKey2.equals("")) {
+//                    throw new FileNotFoundException("File not Found");
+//                }
 
                 SecretKey original = encryptionService.decryptSecretKey(key, secretKey2);
                 this.encryptionService.decryptRSA(file, this.storageService.load(file.getOriginalFilename(), true), original);
