@@ -18,13 +18,9 @@ public interface IEncryptionService {
 
     String generatePrivateKey();
 
-    void encrypt(MultipartFile file, Path filePath) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException;
-
-    String readFile(Path filePath) throws IOException;
-
     void writeToFile(String text, Path filePath) throws IOException;
 
-    void decrypt(MultipartFile file, Path filePath) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException;
+    void writeToFileByte(byte[] myByteArray, Path filePath) throws IOException;
 
     String encryptRSA(MultipartFile file, Path filePath, String key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException;
 

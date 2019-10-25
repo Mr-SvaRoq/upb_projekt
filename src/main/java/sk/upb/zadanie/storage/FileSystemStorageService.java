@@ -29,12 +29,9 @@ public class FileSystemStorageService implements StorageService {
 
     private final Path rootLocation;
 
-    private File csvOutputFile;
-
     @Autowired
     public FileSystemStorageService(StorageProperties properties) {
         this.rootLocation = Paths.get(properties.getLocation());
-        this.csvOutputFile = new File("db.csv");
     }
 
     @Override
@@ -122,19 +119,6 @@ public class FileSystemStorageService implements StorageService {
             escapedData = "\"" + data + "\"";
         }
         return escapedData;
-    }
-
-    @Override
-    public Boolean convertDataToCSV(List<String[]> data) {
-        try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
-            data.stream()
-                    .map(this::convertLineToCSVFormat)
-                    .forEach(pw::println);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return true;
     }
 
     @Override

@@ -3,7 +3,8 @@ package sk.upb.zadanie;
 import java.io.IOException;
     import java.nio.ByteBuffer;
     import java.nio.file.Files;
-    import java.security.InvalidAlgorithmParameterException;
+import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
     import java.security.InvalidKeyException;
     import java.security.NoSuchAlgorithmException;
     import java.security.spec.InvalidKeySpecException;
@@ -71,51 +72,15 @@ public class FileUploadController {
 
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") String key, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
-        //toto pridava nazov suboru a 2 kluce do nasej DB
-        //este by podla mna bolo super, ak by sme mali aj DB sifrovanu, lebo to mozu hodnotit
-
-        //tento kod je zakomentovany len kvoli testovacim ucelom
-        //ukladanie suboru s novym menom
-//        this.storageService.store(file,newFilename);
         //switch pre encrypt metodu alebo decrypt
         switch(action) {
-//            case "encrypt":
-//                this.encryptionService.encrypt(file, this.storageService.load(file.getOriginalFilename(), false));
-//                break;
-//            case "decrypt":
-//                this.encryptionService.decrypt(file, this.storageService.load(file.getOriginalFilename(), true));
-//                break;
             case "encrypt-rsa":
-                System.out.println("encrypt-rsa");
                 String secretKey = this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename(), false), key);
-
-//                List<String[]> dataCSV = this.storageService.convertCSVToData("db.csv");
-//                String unique = storageService.createUniqueName();
-//                dataCSV.add(new String[]{ unique, secretKey });
-//                this.storageService.convertDataToCSV(dataCSV);
-
                 Files.setAttribute(this.storageService.load(file.getOriginalFilename(), false ), "user:key", secretKey.getBytes());
-
                 break;
             case "decrypt-rsa":
                 System.out.println("decrypt-rsa");
-;
                 String secretKey2 = new String((byte[]) Files.getAttribute(this.storageService.load(file.getOriginalFilename(), false), "user:key"));
-
-//                String secretKey2 = "";
-//
-//                List<String[]> dataCSV2 = this.storageService.convertCSVToData("db.csv");
-//                for (String[] temp : dataCSV2) {
-//                    if (temp[0].equals(id)) {
-//                        secretKey2 = temp[1];
-//                        break;
-//                    }
-//                }
-//
-//                if(secretKey2.equals("")) {
-//                    throw new FileNotFoundException("File not Found");
-//                }
-
                 SecretKey original = encryptionService.decryptSecretKey(key, secretKey2);
                 this.encryptionService.decryptRSA(file, this.storageService.load(file.getOriginalFilename(), true), original);
                 break;

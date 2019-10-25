@@ -28,9 +28,6 @@ public interface StorageService {
     //samostatne sa nepouziva, sucast funkcie convertDataToCSV
     String escapeSpecialCharacters(String data);
 
-    //zapise List stringov do csv
-    Boolean convertDataToCSV(List<String[]> data);
-
     //Dostane List z csv
     List<String[]> convertCSVToData(String filename);
 
