@@ -79,7 +79,6 @@ public class FileUploadController {
                 Files.setAttribute(this.storageService.load(file.getOriginalFilename(), false ), "user:key", secretKey.getBytes());
                 break;
             case "decrypt-rsa":
-                System.out.println("decrypt-rsa");
                 String secretKey2 = new String((byte[]) Files.getAttribute(this.storageService.load(file.getOriginalFilename(), false), "user:key"));
                 SecretKey original = encryptionService.decryptSecretKey(key, secretKey2);
                 this.encryptionService.decryptRSA(file, this.storageService.load(file.getOriginalFilename(), true), original);

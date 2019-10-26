@@ -27,7 +27,7 @@ public class FileSystemEncryptionService implements IEncryptionService {
 
     private GenerateKeys generate;
 
-    public FileSystemEncryptionService() throws NoSuchPaddingException, NoSuchAlgorithmException, IOException {
+        public FileSystemEncryptionService() throws NoSuchPaddingException, NoSuchAlgorithmException, IOException {
         this.secretKey = this.cipherHandler.generateSecretKey();
         this.mac = this.cipherHandler.generateMacKey();
         this.generate = new GenerateKeys(512);
