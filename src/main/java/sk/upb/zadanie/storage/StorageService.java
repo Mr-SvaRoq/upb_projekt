@@ -14,9 +14,9 @@ public interface StorageService {
 
     Stream<Path> loadAll();
 
-    Path load(String filename, boolean decMode);
+    Path load(String filename);
 
-    Resource loadAsResource(String filename) throws java.io.FileNotFoundException;
+    Resource loadAsResource(String filename, boolean path) throws java.io.FileNotFoundException;
 
     String createUniqueName();
 

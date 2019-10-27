@@ -1,9 +1,12 @@
 package sk.upb.zadanie;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
     import java.nio.ByteBuffer;
     import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
     import java.util.Arrays;
@@ -14,7 +17,8 @@ import java.util.List;
     import org.springframework.core.io.Resource;
     import org.springframework.http.ResponseEntity;
     import org.springframework.http.ResponseEntity.BodyBuilder;
-    import org.springframework.stereotype.Controller;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.stereotype.Controller;
     import org.springframework.ui.Model;
     import org.springframework.web.bind.annotation.ExceptionHandler;
     import org.springframework.web.bind.annotation.GetMapping;
@@ -56,7 +60,7 @@ public class FileUploadController {
     @GetMapping({"/files/{filename:.+}"})
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws java.io.FileNotFoundException {
-        Resource file = this.storageService.loadAsResource(filename);
+        Resource file = this.storageService.loadAsResource(filename, true);
         return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
     }
 
@@ -69,21 +73,37 @@ public class FileUploadController {
         return "redirect:/project";
     }
 
+    @PostMapping({"/generate_file"})
+    @ResponseBody
+    public ResponseEntity<Resource> serveFileWithKeys(@RequestParam("public_key") String public_key, @RequestParam("private_key") String private_key) throws IOException {
+        File file = new File("keys.txt");
+
+        if (file.createNewFile())
+        {
+            System.out.println("File is created!");
+        } else {
+            System.out.println("File already exists.");
+        }
+
+        FileWriter writer = new FileWriter(file);
+        writer.write("Public key - \n" + public_key + "\nPrivate key - \n" + private_key);
+        writer.close();
+
+        Resource resource = this.storageService.loadAsResource("keys.txt", false);
+
+        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + resource.getFilename() + "\""})).body(resource);
+    }
+
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") String key, @RequestParam("action") String action,RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         //switch pre encrypt metodu alebo decrypt
         switch(action) {
             case "encrypt-rsa":
-                this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename(), false), key);
-//                String secretKey = this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename(), false), key);
-//                Files.setAttribute(this.storageService.load(file.getOriginalFilename(), false ), "user:key", secretKey.getBytes());
+                this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename()), key);
                 break;
             case "decrypt-rsa":
-                //TODO save
-
-//                String secretKey2 = new String((byte[]) Files.getAttribute(this.storageService.load(file.getOriginalFilename(), false), "user:key"));
-//                SecretKey original = encryptionService.decryptSecretKey(key, secretKey2);
-                this.encryptionService.decryptRSA(file, this.storageService.load(file.getOriginalFilename(), true), key);
+                storageService.store(file, "Decrypted-" + file.getOriginalFilename());
+                this.encryptionService.decryptRSA(file, this.storageService.load("Decrypted-" + file.getOriginalFilename()), key);
                 break;
             default:
                 System.out.println("Nieco sa pokazilo...");

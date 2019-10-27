@@ -12,7 +12,7 @@
                 <td>File to upload:</td><td><input type="file" name="file" required/></td>
             </tr>
             <tr>
-                <td>Key to upload:</td><td><textarea name="key" id="" cols="30" rows="10" required></textarea></td>
+                <td>Key to upload:</td><td><textarea name="key" id="" cols="30" rows="10" required></textarea></td><td>Delete all new-line characters from the end of entered key...</td>
             </tr>
             <tr>
                 <td>
@@ -26,7 +26,7 @@
         </table>
     </form>
     <form method="post" id="form2" action="/generate_key">
-        <h3>Doesn't have public and private key? Generate them!</h3>
+        <h3>Don't have public and private key? Generate them!</h3>
         <input type="submit" value="Generate keys!" />
     </form>
     <div th:if="${public_key}" style="max-width: 50%">
@@ -35,15 +35,23 @@
     <div th:if="${private_key}" style="max-width: 50%">
         <span>Private key:</span><p th:text="${private_key}" style="overflow: auto">
     </div>
+    <div th:if="${private_key}">
+        <form method="post" id="form3" action="/generate_file">
+            <p>You can download them as .txt file as well!</p>
+            <input type="hidden" id="public_key" name="public_key" th:value="${public_key}">
+            <input type="hidden" id="private_key" name="private_key" th:value="${private_key}">
+            <input type="submit" value="Download keys!" />
+        </form>
+    </div>
     <div>
-        <p style="font-size: small">Don't lose generated keys, because you will never <br>get to the content of your files again... File <br>encrypted with one key can be decrypted <br>only with same key!</p>
+        <p style="font-size: small">Don't lose generated keys, because you will never <br>get to the content of your files again... File <br>encrypted with one public key can be decrypted <br>only with sibling private key!</p>
     </div>
 </div>
 
 <div>
     <ul>
         <li th:each="file : ${files}">
-            <a th:href="${file}" th:text="${file.substring(file.lastIndexOf('/') + 8)}" />
+            <a style="text-decoration: none; font-size: larger; color: white;" th:href="${file}" th:text="${file.substring(file.lastIndexOf('/') + 1)}" />
         </li>
     </ul>
 </div>
