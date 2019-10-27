@@ -9,8 +9,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 class CipherHandler {
     SecureRandom secureRandom = new SecureRandom();
+    RSAHandler rsaHandler = new RSAHandler();
 
-    CipherHandler() {
+    CipherHandler() throws NoSuchPaddingException, NoSuchAlgorithmException {
     }
 
     SecretKey generateSecretKey() {
@@ -31,7 +32,7 @@ class CipherHandler {
         return new SecretKeySpec(key, "HmacSHA256");
     }
 
-    byte[] doEncrypt(final byte[] iv, final SecretKey secretKey, final SecretKey macKey, final byte[] plainText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+    byte[] doEncrypt(final byte[] iv, final SecretKey secretKey, final SecretKey macKey, final PublicKey publicKey, final byte[] plainText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException {
         final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec gcm = new GCMParameterSpec(128, iv);
         final Mac hmac = Mac.getInstance("HmacSHA256");
@@ -53,10 +54,12 @@ class CipherHandler {
 
         byte [] mac = hmac.doFinal();
 
-        return this.concatCipherToSingleMessage(iv, cipherText, mac);
+        byte [] encryptedKey = rsaHandler.encryptText(secretKey.getEncoded(), publicKey);
+
+        return this.concatCipherToSingleMessage(iv, cipherText, mac, encryptedKey);
     }
 
-    byte[] decrypt(final byte[] cipherText, final byte[] initialVector, final SecretKey key, final SecretKey macKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+    byte[] decrypt(final byte[] cipherText, final PrivateKey privateKey, final SecretKey macKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         // java.lang.NullPointerException: null
         ByteBuffer buf = ByteBuffer.wrap(cipherText);
 
@@ -68,6 +71,11 @@ class CipherHandler {
         int macLength = (buf.get()); //TODO tu je chybam dava negativny macLength, e.g. macLength = -17
         byte [] mac = new byte[macLength];
         buf.get(mac);
+
+
+        int encryptedKeyLength = (buf.get()); //TODO tu je chybam dava negativny macLength, e.g. macLength = -17
+        byte [] encryptedKey = new byte[encryptedKeyLength];
+        buf.get(encryptedKey);
 
         byte [] cipherT = new byte[buf.remaining()];
         buf.get(cipherT);
@@ -82,19 +90,24 @@ class CipherHandler {
             throw new SecurityException("could not authenticate");
         }
 
+        byte[] decrypted = rsaHandler.decryptText(encryptedKey, privateKey);
+        SecretKey originalKey = new SecretKeySpec(decrypted, 0, decrypted.length, "AES");
+
         final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
+        cipher.init(Cipher.DECRYPT_MODE, originalKey, new GCMParameterSpec(128, iv));
 
         return cipher.doFinal(cipherT);
 
     }
 
-    private byte[] concatCipherToSingleMessage(final byte[] iv, final byte[] cipherText, final byte [] mac) {
-        ByteBuffer buffer = ByteBuffer.allocate(4 + iv.length + 1 + mac.length + cipherText.length);
+    private byte[] concatCipherToSingleMessage(final byte[] iv, final byte[] cipherText, final byte [] mac, final byte[] encrypredKey) {
+        ByteBuffer buffer = ByteBuffer.allocate(4 + iv.length + 1 + mac.length + 1 + encrypredKey.length + cipherText.length);
         buffer.putInt(iv.length);
         buffer.put(iv);
         buffer.put((byte) mac.length);
         buffer.put(mac);
+        buffer.put((byte) encrypredKey.length);
+        buffer.put(encrypredKey);
         buffer.put(cipherText);
         return buffer.array();
     }

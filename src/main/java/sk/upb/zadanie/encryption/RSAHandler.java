@@ -31,13 +31,13 @@ public class RSAHandler {
 		return kf.generatePublic(spec);
 	}
 	
-	public String encryptText(byte[] msg, PublicKey key) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+	public byte[] encryptText(byte[] msg, PublicKey key) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		this.cipher.init(Cipher.ENCRYPT_MODE, key);
-		return Base64.encodeBase64String(cipher.doFinal(msg));
+		return cipher.doFinal(msg);
 	}
 
 	public byte[] decryptText(byte [] msg, PrivateKey key) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		this.cipher.init(Cipher.DECRYPT_MODE, key);
-		return cipher.doFinal(Base64.decodeBase64(msg));
+		return cipher.doFinal(msg);
 	}
 }

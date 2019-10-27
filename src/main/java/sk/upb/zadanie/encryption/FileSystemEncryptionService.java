@@ -27,7 +27,7 @@ public class FileSystemEncryptionService implements IEncryptionService {
 
     private GenerateKeys generate;
 
-        public FileSystemEncryptionService() throws NoSuchPaddingException, NoSuchAlgorithmException, IOException {
+    public FileSystemEncryptionService() throws NoSuchPaddingException, NoSuchAlgorithmException, IOException {
         this.secretKey = this.cipherHandler.generateSecretKey();
         this.mac = this.cipherHandler.generateMacKey();
         this.generate = new GenerateKeys(512);
@@ -58,11 +58,12 @@ public class FileSystemEncryptionService implements IEncryptionService {
     }
 
     @Override
-    public String encryptRSA(MultipartFile file, Path filePath, String key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
+    public byte[] encryptRSA(MultipartFile file, Path filePath, String key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         byte[] plainText = file.getBytes();
         this.iv = this.cipherHandler.generateInitialVector();
         PublicKey publicKey = rsaHandler.getPublic(Base64.getDecoder().decode(key));
-        this.cipher = cipherHandler.doEncrypt(iv, secretKey, mac, plainText); //TODO THIS
+
+            this.cipher = cipherHandler.doEncrypt(iv, secretKey, mac, publicKey, plainText); //TODO iv sa nebude pouzivat, secret key bude danielka teraz robit, mac mozno pojde prec, lebo GCM pojde ma integritu
         this.writeToFileByte(this.cipher, filePath);
         return rsaHandler.encryptText(secretKey.getEncoded(), publicKey); //TODO THIS sifrovanie kluca
     }
@@ -75,9 +76,10 @@ public class FileSystemEncryptionService implements IEncryptionService {
     }
 
     @Override
-    public void decryptRSA(MultipartFile file, Path filePath, SecretKey originalKey) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+    public void decryptRSA(MultipartFile file, Path filePath, String privateKey) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException {
         byte[] plainText = file.getBytes();
-        byte[] plain = cipherHandler.decrypt(plainText, iv, originalKey, mac); //TODO THIS
+        PrivateKey newPrivateKey = rsaHandler.getPrivate(Base64.getDecoder().decode(privateKey));
+        byte[] plain = cipherHandler.decrypt(plainText, newPrivateKey, mac); //TODO THIS
         String decipheredText = new String(plain);
         this.writeToFile(decipheredText, filePath);
     }

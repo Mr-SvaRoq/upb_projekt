@@ -4,12 +4,11 @@ import java.io.IOException;
     import java.nio.ByteBuffer;
     import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.InvalidAlgorithmParameterException;
-    import java.security.InvalidKeyException;
-    import java.security.NoSuchAlgorithmException;
-    import java.security.spec.InvalidKeySpecException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
     import java.util.Arrays;
-    import java.util.List;
+import java.util.Base64;
+import java.util.List;
     import java.util.stream.Collectors;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.core.io.Resource;
@@ -75,13 +74,16 @@ public class FileUploadController {
         //switch pre encrypt metodu alebo decrypt
         switch(action) {
             case "encrypt-rsa":
-                String secretKey = this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename(), false), key);
-                Files.setAttribute(this.storageService.load(file.getOriginalFilename(), false ), "user:key", secretKey.getBytes());
+                this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename(), false), key);
+//                String secretKey = this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename(), false), key);
+//                Files.setAttribute(this.storageService.load(file.getOriginalFilename(), false ), "user:key", secretKey.getBytes());
                 break;
             case "decrypt-rsa":
-                String secretKey2 = new String((byte[]) Files.getAttribute(this.storageService.load(file.getOriginalFilename(), false), "user:key"));
-                SecretKey original = encryptionService.decryptSecretKey(key, secretKey2);
-                this.encryptionService.decryptRSA(file, this.storageService.load(file.getOriginalFilename(), true), original);
+                //TODO save
+
+//                String secretKey2 = new String((byte[]) Files.getAttribute(this.storageService.load(file.getOriginalFilename(), false), "user:key"));
+//                SecretKey original = encryptionService.decryptSecretKey(key, secretKey2);
+                this.encryptionService.decryptRSA(file, this.storageService.load(file.getOriginalFilename(), true), key);
                 break;
             default:
                 System.out.println("Nieco sa pokazilo...");
