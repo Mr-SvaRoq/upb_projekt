@@ -49,7 +49,7 @@ public class FileUploadController {
         this.encryptionService = encryptionService;
     }
 
-    @GetMapping({"/project"})
+    @GetMapping({"/"})
     public String listUploadedFiles(Model model) throws IOException {
         model.addAttribute("files", this.storageService.loadAll().map((path) -> {
             return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
@@ -64,13 +64,20 @@ public class FileUploadController {
         return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
     }
 
+    @PostMapping({"/download"})
+    @ResponseBody
+    public ResponseEntity<Resource> serveFile() throws java.io.FileNotFoundException {
+        Resource file = this.storageService.loadAsResource("upb_decypher.jar", false);
+        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
+    }
+
     @PostMapping({"/generate_key"})
     public String generateKeys(RedirectAttributes redirectAttributes) throws java.io.FileNotFoundException {
 
         redirectAttributes.addFlashAttribute("public_key",encryptionService.generatePublicKey());
         redirectAttributes.addFlashAttribute("private_key",encryptionService.generatePrivateKey());
 
-        return "redirect:/project";
+        return "redirect:/";
     }
 
     @PostMapping({"/generate_file"})
@@ -78,8 +85,7 @@ public class FileUploadController {
     public ResponseEntity<Resource> serveFileWithKeys(@RequestParam("public_key") String public_key, @RequestParam("private_key") String private_key) throws IOException {
         File file = new File("keys.txt");
 
-        if (file.createNewFile())
-        {
+        if (file.createNewFile()) {
             System.out.println("File is created!");
         } else {
             System.out.println("File already exists.");
@@ -109,7 +115,7 @@ public class FileUploadController {
                 System.out.println("Nieco sa pokazilo...");
         }
         redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
-        return "redirect:/project";
+        return "redirect:/";
     }
 
     @ExceptionHandler({FileNotFoundException.class})

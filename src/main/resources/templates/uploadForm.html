@@ -17,8 +17,8 @@
             <tr>
                 <td>
                     <select name="action">
-                    <option value="encrypt-rsa">Encrypt-RSA</option>
-                    <option value="decrypt-rsa">Decrypt-RSA</option>
+                    <option value="encrypt-rsa">Encrypt</option>
+                    <option value="decrypt-rsa">Decrypt</option>
                 </select>
                 </td>
                 <td><input type="submit" value="Upload file and key!" /></td>
@@ -46,6 +46,11 @@
     <div>
         <p style="font-size: small">Don't lose generated keys, because you will never <br>get to the content of your files again... File <br>encrypted with one public key can be decrypted <br>only with sibling private key!</p>
     </div>
+    <form method="post" id="form4" action="/download">
+        <h3>You can download desktop application to decrypt files on the go!</h3>
+        <p style="font-size: small">Run with command: java -jar filename.jar</p>
+        <input type="submit" value="Download app!" />
+    </form>
 </div>
 
 <div>

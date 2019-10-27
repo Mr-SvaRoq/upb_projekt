@@ -20,7 +20,7 @@ public class ZadanieApplication {
     CommandLineRunner init(StorageService storageService) {
         return (args) -> {
             System.out.println("UPB-zadanie");
-            System.out.println("http://localhost:8080/project");
+            System.out.println("http://localhost:8080/");
             storageService.deleteAll();
             storageService.init();
         };
