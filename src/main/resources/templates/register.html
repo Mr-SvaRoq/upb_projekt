@@ -1,0 +1,20 @@
+<html xmlns:th="https://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body style="background: black; color: white">
+<h1>Register</h1>
+<form method="post" id="form4" action="/register">
+    User: <br><input type="text" name="user" required/> <br>
+    Password:<br><input type="password" name="password" required/> <br>
+    Confirm Password:<br><input type="password" name="conFirmpassword" required/> <br>
+    <input type="submit" value="Login!" />
+</form>
+<div th:if="${loginBad}">
+    <h2 th:text="${loginBad}"/>
+</div>
+</body>
+</html>

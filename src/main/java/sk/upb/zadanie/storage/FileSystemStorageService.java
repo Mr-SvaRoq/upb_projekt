@@ -160,4 +160,9 @@ public class FileSystemStorageService implements StorageService {
             throw new StorageException("Could not initialize storage", e);
         }
     }
+
+    @Override
+    public Path getRootLocation() {
+        return rootLocation;
+    }
 }

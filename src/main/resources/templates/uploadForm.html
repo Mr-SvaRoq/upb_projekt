@@ -5,6 +5,10 @@
     <h2 th:text="${message}"/>
 </div>
 
+<div th:if="${login}">
+    <h2 th:text="${login}"/>
+</div>
+
 <div>
     <form id="form" method="POST" enctype="multipart/form-data" action="/">
         <table>
@@ -60,6 +64,14 @@
         </li>
     </ul>
 </div>
+
+<!--<button onclick="myFunction()">Replace document</button>-->
+
+<!--<script>-->
+<!--    function myFunction() {-->
+<!--        location.replace("/skuska")-->
+<!--    }-->
+<!--</script>-->
 
 </body>
 </html>

@@ -32,4 +32,6 @@ public interface StorageService {
     List<String[]> convertCSVToData(String filename);
 
     void deleteAll();
+
+    Path getRootLocation();
 }
