@@ -53,10 +53,7 @@ public class FileUploadController {
         model.addAttribute("files", this.storageService.loadAll().map((path) -> {
             return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
         }).collect(Collectors.toList()));
-        System.out.println(cookies.readAllCookies(request));
-
         String allCookies = cookies.readAllCookies(request);
-
         if (allCookies.contains("userName=")){
             return "uploadForm";
         } else {
@@ -67,7 +64,6 @@ public class FileUploadController {
     /****************FUJ OOP TREBA*********************/
     @GetMapping({"/login"})
     public String login(Model model, HttpServletRequest request){
-        System.out.println(cookies.readAllCookies(request));
         String allCookies = cookies.readAllCookies(request);
         if (allCookies.contains("userName=")){
             return "redirect:/";
@@ -104,7 +100,6 @@ public class FileUploadController {
     /****************FUJ OOP TREBA*********************/
     @GetMapping({"/register"})
     public String register(Model model, HttpServletRequest request) throws IOException {
-        System.out.println(cookies.readAllCookies(request));
         String allCookies = cookies.readAllCookies(request);
         if (allCookies.contains("userName=")){
             return "redirect:/";
