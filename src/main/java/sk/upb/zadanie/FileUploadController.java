@@ -112,15 +112,36 @@ public class FileUploadController {
 //        }).collect(Collectors.toList()));
     }
 
+    //TODO DOROBIT ZAPISOVANIE DO CSV
     @PostMapping({"/register"})
-    public String register(@RequestParam("user") String userName, @RequestParam("password") String password, @RequestParam("conFirmpassword") String conFirmpassword, RedirectAttributes redirectAttributes) {
+    public String register(@RequestParam("user") String userName, @RequestParam("password") String password, @RequestParam("conFirmpassword") String conFirmpassword, RedirectAttributes redirectAttributes, HttpServletResponse response) {
         //treba v csv kontroloval, ci existuje user a ci heslo je rovnake ako confirmHeslo a ci to nie Slabe heslo, -> na to osobitny kontroler by trebalo a bude vraciat T/F
-        if (!userName.equals("Skuska") && password.equals(conFirmpassword)) {
+        List<String[]> data = storageService.convertCSVToData("users.csv");
+        for (String[] row : data) {
+            if (userName.equals(row[1])) {
+                redirectAttributes.addFlashAttribute("loginBad", "uzivatel existuje: " + userName);
+                return "redirect:/register";
+            }
+//                if (password.equals(row[2])) {
+//                    redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
+//                    cookies.setCookie(response, userName);
+//                    return "redirect:/";
+//                } else {
+//                    redirectAttributes.addFlashAttribute("login", "Zle heslo !");
+//                    return "redirect:/login";
+//                }
+//            }
+        }
+
+        if (password.equals(conFirmpassword)) {
+            String[] newLine = {"ideecko originalne treba vymysliet", userName, password} ;
+            String newLineInCSVformat = storageService.convertLineToCSVFormat(newLine);
+            //treba pridat do CSV uzivatelov
             redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
             return "redirect:/";
         }
         else {
-            redirectAttributes.addFlashAttribute("loginBad", "Registracia neuspesna!");
+            redirectAttributes.addFlashAttribute("loginBad", "Nezhodne miesta!");
             return "redirect:/register";
         }
     }
