@@ -127,7 +127,7 @@ public class FileSystemStorageService implements StorageService {
     @Override
     public List<String[]> convertCSVToData(String filename) {
         List<String[]> records = new ArrayList<>();
-        try (CSVReader csvReader = new CSVReader(new FileReader(filename));) {
+        try (CSVReader csvReader = new CSVReader(new FileReader(filename))) {
             String[] values = null;
             while ((values = csvReader.readNext()) != null) {
                 records.add(values);

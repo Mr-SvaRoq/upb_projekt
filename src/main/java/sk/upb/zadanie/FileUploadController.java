@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,66 +24,102 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sk.upb.zadanie.encryption.IEncryptionService;
+import sk.upb.zadanie.storage.Cookies;
 import sk.upb.zadanie.storage.FileNotFoundException;
 import sk.upb.zadanie.storage.StorageService;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class FileUploadController {
     private final StorageService storageService;
     private final IEncryptionService encryptionService;
+    private final Cookies cookies;
 
     @Autowired
-    public FileUploadController(StorageService storageService, IEncryptionService encryptionService) {
+    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies) {
         this.storageService = storageService;
         this.encryptionService = encryptionService;
+        this.cookies = cookies;
     }
 
     //NOT OOP FFS,
     @GetMapping({"/"})
-    public String listUploadedFiles(Model model) throws IOException {
+    public String listUploadedFiles(Model model, HttpServletRequest request) throws IOException {
         model.addAttribute("files", this.storageService.loadAll().map((path) -> {
             return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
         }).collect(Collectors.toList()));
-        return "uploadForm";
+        System.out.println(cookies.readAllCookies(request));
+
+        String allCookies = cookies.readAllCookies(request);
+
+        if (allCookies.contains("userName=")){
+            return "uploadForm";
+        } else {
+            return "redirect:/login";
+        }
     }
 
     /****************FUJ OOP TREBA*********************/
     @GetMapping({"/login"})
-    public String login(Model model) throws IOException {
+    public String login(Model model, HttpServletRequest request){
+        System.out.println(cookies.readAllCookies(request));
+        String allCookies = cookies.readAllCookies(request);
+        if (allCookies.contains("userName=")){
+            return "redirect:/";
+        } else {
+            return "login";
+        }
+        // neviem co je ten model, ale nechal som to hu
 //        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
 //            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
 //        }).collect(Collectors.toList()));
-        return "login";
     }
 
     @PostMapping({"/login"})
-    public String login(@RequestParam("user") String userName, @RequestParam("password") String password, RedirectAttributes redirectAttributes) {
-        if (userName.equals("Skuska") && password.equals("Skuska123")) {
-            redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
-            return "redirect:/";
+    public String login(@RequestParam("user") String userName, @RequestParam("password") String password, RedirectAttributes redirectAttributes, HttpServletResponse response) {
+        //treba v csv kontroloval, ci existuje user a ci sedi heslo, -> na to osobitny kontroler by trebalo a bude vraciat T/F
+        List<String[]> data = storageService.convertCSVToData("users.csv");
+        for (String[] row : data) {
+            if (userName.equals(row[1])) {
+                if (password.equals(row[2])) {
+                    redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
+                    cookies.setCookie(response, userName);
+                    return "redirect:/";
+                } else {
+                    redirectAttributes.addFlashAttribute("login", "Zle heslo !");
+                    return "redirect:/login";
+                }
+            }
         }
-        else {
-            redirectAttributes.addFlashAttribute("login", "NOP, zle daco !");
-            return "redirect:/skuska";
-        }
+        redirectAttributes.addFlashAttribute("login", "Nenasiel sa user!");
+        return "redirect:/login";
     }
     /*************************************/
 
     /****************FUJ OOP TREBA*********************/
     @GetMapping({"/register"})
-    public String register(Model model) throws IOException {
+    public String register(Model model, HttpServletRequest request) throws IOException {
+        System.out.println(cookies.readAllCookies(request));
+        String allCookies = cookies.readAllCookies(request);
+        if (allCookies.contains("userName=")){
+            return "redirect:/";
+        } else {
+            return "register";
+        }
+        // neviem co je ten model, ale nechal som to hu
 //        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
 //            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
 //        }).collect(Collectors.toList()));
-        return "register";
     }
 
     @PostMapping({"/register"})
     public String register(@RequestParam("user") String userName, @RequestParam("password") String password, @RequestParam("conFirmpassword") String conFirmpassword, RedirectAttributes redirectAttributes) {
+        //treba v csv kontroloval, ci existuje user a ci heslo je rovnake ako confirmHeslo a ci to nie Slabe heslo, -> na to osobitny kontroler by trebalo a bude vraciat T/F
         if (!userName.equals("Skuska") && password.equals(conFirmpassword)) {
             redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
             return "redirect:/";
@@ -157,8 +194,16 @@ public class FileUploadController {
         return "redirect:/";
     }
 
+    @PostMapping({"/logOut"})
+    public String logOut(RedirectAttributes redirectAttributes, HttpServletResponse response) {
+        redirectAttributes.addFlashAttribute("logout", "Odhlaseny ");
+        cookies.deleteCookie(response);
+        return "redirect:/login";
+    }
+
     @ExceptionHandler({FileNotFoundException.class})
     public ResponseEntity<?> handleStorageFileNotFound(FileNotFoundException exc) {
         return ResponseEntity.notFound().build();
     }
+
 }
