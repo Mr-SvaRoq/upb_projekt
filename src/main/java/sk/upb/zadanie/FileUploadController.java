@@ -61,8 +61,8 @@ public class FileUploadController {
         }
 
         for (String[] row : data) {
-            if (cookies.getCookieValue(request, "userName").equals(row[1])) {
-                if (cookies.getCookieValue(request, "userPassword").equals(row[2])) {
+            if (cookies.getCookieValue(request, "userName").equals(row[0])) {
+                if (cookies.getCookieValue(request, "userPassword").equals(row[1])) {
                     //TODO meno prihlasenie, po refresh
                     redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
                     redirectAttributes.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
@@ -80,7 +80,7 @@ public class FileUploadController {
     @GetMapping({"/login"})
     public String login(Model model, HttpServletRequest request){
         String allCookies = cookies.readAllCookies(request);
-        if (allCookies.contains("userName=")){
+        if ( allCookies.contains("userName=")  && allCookies.contains("userPassword=")) {
             return "redirect:/";
         } else {
             return "login";
@@ -92,8 +92,8 @@ public class FileUploadController {
         //treba v csv kontroloval, ci existuje user a ci sedi heslo, -> na to osobitny kontroler by trebalo a bude vraciat T/F
         List<String[]> data = storageService.convertCSVToData("users.csv");
         for (String[] row : data) {
-            if (userName.equals(row[1])) {
-                if (password.equals(row[2])) {
+            if (userName.equals(row[0])) {
+                if (password.equals(row[1])) {
                     redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
                     cookies.setCookieUserNamePassword(response, userName, password);
                     return "redirect:/";
@@ -112,7 +112,7 @@ public class FileUploadController {
     @GetMapping({"/register"})
     public String register(Model model, HttpServletRequest request) throws IOException {
         String allCookies = cookies.readAllCookies(request);
-        if (allCookies.contains("userName=")){
+        if ( !allCookies.contains("userName=")  && !allCookies.contains("userPassword=")) {
             return "redirect:/";
         } else {
             return "register";
@@ -125,7 +125,7 @@ public class FileUploadController {
 
         List<String[]> data = storageService.convertCSVToData("users.csv");
         for (String[] row : data) {
-            if (userName.equals(row[1])) {
+            if (userName.equals(row[0])) {
                 redirectAttributes.addFlashAttribute("loginBad", "uzivatel existuje: " + userName);
                 return "redirect:/register";
             }
@@ -157,9 +157,7 @@ public class FileUploadController {
     @PostMapping({"/download"})
     @ResponseBody
     public ResponseEntity<Resource> serveFile() throws java.io.FileNotFoundException {
-//        Resource file = this.storageService.loadAsResource(this.storageService.getRootLocation() + "\\..\\src\\main\\upb_decypher.jar", false);
         Resource file = this.storageService.loadAsResource("upb_decypher.jar", false);
-
         return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
     }
 
