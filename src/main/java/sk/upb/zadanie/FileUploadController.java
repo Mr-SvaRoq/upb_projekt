@@ -196,14 +196,14 @@ public class FileUploadController {
         String filename = "";
         switch (action) {
             case "encrypt-rsa":
-                if (!storageService.checkIfFileExist(storageService.load("Encrypted-" + file.getOriginalFilename()).toString())) {
-                    filename = "Encrypted-" + file.getOriginalFilename();
+                if (!storageService.checkIfFileExist(storageService.load(file.getOriginalFilename()).toString())) {
+                    filename = file.getOriginalFilename();
                 } else {
                     int i = 1;
-                    while(storageService.checkIfFileExist(storageService.load("Encrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
+                    while(storageService.checkIfFileExist(storageService.load("(" + i + ")-" + file.getOriginalFilename()).toString())) {
                         i++;
                     }
-                    filename = "Encrypted-(" + i + ")-" + file.getOriginalFilename();
+                    filename = "(" + i + ")-" + file.getOriginalFilename();
                 }
                 storageService.store(file, filename);
                 this.encryptionService.encryptRSA(file, this.storageService.load(filename), key);
