@@ -71,7 +71,8 @@
 <div>
     <ul>
         <li th:each="file : ${files}">
-            <a style="text-decoration: none; font-size: larger; color: white;" th:href="${file}" th:text="${file.substring(file.lastIndexOf('/') + 1)}" />
+            <a style="text-decoration: none; font-size: larger; color: white;" th:href="${file[0]}" th:text="${file[0].substring(file[0].lastIndexOf('/') + 1)}" />
+            <p style="display: inline-block; font-size: larger; color: white;" th:text="' - ' + ${file[1]}" />
         </li>
     </ul>
 </div>
@@ -88,7 +89,7 @@
         if (value === "encrypt-rsa") {
             keys.innerHTML = public_key_list;
         } else {
-            keys.innerHTML = '<td>Key to upload:</td><td><textarea name="key" id="" cols="30" rows="10" required></textarea></td><td>Delete all new-line characters from the end of entered key...</td>';
+            keys.innerHTML = '<td>Key to upload:</td><td><textarea name="owner" id="" cols="30" rows="10" required></textarea></td><td>Delete all new-line characters from the end of entered key...</td>';
         }
     }
 </script>

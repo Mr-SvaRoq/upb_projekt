@@ -74,24 +74,6 @@ public class FileUploadController {
 //            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
 //        }).collect(Collectors.toList()));
 
-        List files_roots = this.storageService.loadAll().map((path) -> {
-            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
-        }).collect(Collectors.toList());
-
-        List<List<String>> files = new ArrayList<>();
-
-        for (Object file_root : files_roots) {
-            List<String> file_data = new ArrayList<>();
-            file_data.add(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1));
-            file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
-            files.add(file_data);
-            model.addAttribute("files", files);
-        }
-
-        for (Object file_root : files) {
-
-        }
-
         String allCookies = cookies.readAllCookies(request);
         if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
@@ -101,6 +83,21 @@ public class FileUploadController {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
                     model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+                    List files_roots = this.storageService.loadAll().map((path) -> {
+                        return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
+                    }).collect(Collectors.toList());
+
+                    List<List<String>> files = new ArrayList<>();
+
+                    for (Object file_root : files_roots) {
+                        List<String> file_data = new ArrayList<>();
+                        if (cookies.getCookieValue(request, "userName").equals(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)))) {
+                            file_data.add(file_root.toString());
+                            file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
+                            files.add(file_data);
+                            model.addAttribute("files", files);
+                        }
+                    }
 
                     List<List<String>> users = new ArrayList<>();
 
@@ -306,7 +303,7 @@ public class FileUploadController {
     }
 
     @PostMapping({"/"})
-    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("owner") String owner, @RequestParam("action") String action, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("owner") String owner, @RequestParam("action") String action, HttpServletRequest request, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         String filename = "";
         switch (action) {
             case "encrypt-rsa":
@@ -327,18 +324,21 @@ public class FileUploadController {
                 }
                 break;
             case "decrypt-rsa":
-                //tu treba zahajit okamzity download po odsifrovani, lebo inak to nedava zmysel
-//                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
-//                    filename = "Decrypted-" + file.getOriginalFilename();
-//                } else {
-//                    int i = 1;
-//                    while(storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
-//                        i++;
-//                    }
-//                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
-//                }
-//                storageService.store(file, filename);
-//                this.encryptionService.decryptRSA(file, this.storageService.load(filename), key);
+                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
+                    filename = "Decrypted-" + file.getOriginalFilename();
+                } else {
+                    int i = 1;
+                    while(storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
+                        i++;
+                    }
+                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
+                }
+                storageService.store(file, filename, cookies.getCookieValue(request, "userName"));
+                if (storageService.getUserKey(cookies.getCookieValue(request, "userName")).equals("")) {
+                    System.out.println("Nieco sa pokazilo...");
+                } else {
+                    this.encryptionService.decryptRSA(file, this.storageService.load(filename), owner);
+                }
                 break;
             default:
                 System.out.println("Nieco sa pokazilo...");
