@@ -46,7 +46,7 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public void store(MultipartFile file, String newName) {
+    public void store(MultipartFile file, String newName, String owner) {
         String newFilename = newName;
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
         try {
@@ -62,6 +62,10 @@ public class FileSystemStorageService implements StorageService {
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, this.rootLocation.resolve(newFilename),
                         StandardCopyOption.REPLACE_EXISTING);
+                List<String[]> files = convertCSVToData("files.csv");
+                String[] newLine = {newName, owner} ;
+                files.add(newLine);
+                this.convertDataToCSV(files, "files.csv");
             }
         }
         catch (IOException e) {
@@ -119,6 +123,17 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
+    public String getUserKey(String user) {
+        List<String[]> data = convertCSVToData("users.csv");
+        for (String[] user_data : data) {
+            if (user_data[0].equals(user)) {
+                return user_data[2];
+            }
+        }
+        return "";
+    }
+
+    @Override
     public String convertLineToCSVFormat(String[] data) {
         return Stream.of(data)
                 .map(this::escapeSpecialCharacters)
@@ -148,6 +163,17 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
+    public String getFileOwner(String filename) {
+        List<String[]> file_list = convertCSVToData("files.csv");
+        for (String[] file_record : file_list) {
+            if (file_record[0].equals(filename)) {
+                return file_record[1];
+            }
+        }
+        return "Ja neviem uz...";
+    }
+
+    @Override
     public List<String[]> convertCSVToData(String filename) {
         List<String[]> records = new ArrayList<>();
         try (CSVReader csvReader = new CSVReader(new FileReader(filename))) {
@@ -162,11 +188,11 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public void deleteAll() {
+    public void deleteAll(String filename) {
         FileSystemUtils.deleteRecursively(rootLocation.toFile());
         PrintWriter writer = null;
         try {
-            writer = new PrintWriter("db.csv");
+            writer = new PrintWriter(filename);
             writer.print("");
             writer.close();
         } catch (IOException e) {

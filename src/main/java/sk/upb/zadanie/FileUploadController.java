@@ -52,9 +52,28 @@ public class FileUploadController {
     @GetMapping({"/"})
     public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes)  {
         List<String[]> data = storageService.convertCSVToData("users.csv");
-        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
+//        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
+//            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
+//        }).collect(Collectors.toList()));
+
+        List files_roots = this.storageService.loadAll().map((path) -> {
             return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
-        }).collect(Collectors.toList()));
+        }).collect(Collectors.toList());
+
+        List<List<String>> files = new ArrayList<>();
+
+        for (Object file_root : files_roots) {
+            List<String> file_data = new ArrayList<>();
+            file_data.add(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1));
+            file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
+            files.add(file_data);
+            model.addAttribute("files", files);
+        }
+
+        for (Object file_root : files) {
+
+        }
+
         String allCookies = cookies.readAllCookies(request);
         if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
@@ -70,7 +89,6 @@ public class FileUploadController {
                     for (String[] user_data : data) {
                         List<String> user = new ArrayList<>();
                         user.add(user_data[0]);
-                        user.add(user_data[2]);
                         users.add(user);
                         model.addAttribute("users", users);
                     }
@@ -200,7 +218,7 @@ public class FileUploadController {
     }
 
     @PostMapping({"/"})
-    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") String key, @RequestParam("action") String action, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("owner") String owner, @RequestParam("action") String action, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         String filename = "";
         switch (action) {
             case "encrypt-rsa":
@@ -213,21 +231,26 @@ public class FileUploadController {
                     }
                     filename = "(" + i + ")-" + file.getOriginalFilename();
                 }
-                storageService.store(file, filename);
-                this.encryptionService.encryptRSA(file, this.storageService.load(filename), key);
+                storageService.store(file, filename, owner);
+                if (storageService.getUserKey(owner).equals("")) {
+                    System.out.println("Nieco sa pokazilo...");
+                } else {
+                    this.encryptionService.encryptRSA(file, this.storageService.load(filename), storageService.getUserKey(owner));
+                }
                 break;
             case "decrypt-rsa":
-                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
-                    filename = "Decrypted-" + file.getOriginalFilename();
-                } else {
-                    int i = 1;
-                    while(storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
-                        i++;
-                    }
-                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
-                }
-                storageService.store(file, filename);
-                this.encryptionService.decryptRSA(file, this.storageService.load(filename), key);
+                //tu treba zahajit okamzity download po odsifrovani, lebo inak to nedava zmysel
+//                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
+//                    filename = "Decrypted-" + file.getOriginalFilename();
+//                } else {
+//                    int i = 1;
+//                    while(storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
+//                        i++;
+//                    }
+//                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
+//                }
+//                storageService.store(file, filename);
+//                this.encryptionService.decryptRSA(file, this.storageService.load(filename), key);
                 break;
             default:
                 System.out.println("Nieco sa pokazilo...");

@@ -23,8 +23,8 @@
             <tr id="keys">
                 <td>Key to upload:</td>
                 <td>
-                    <select name="key">
-                        <option th:each="user : ${users}" th:value="${user[1]}" th:text="${user[0]}" />
+                    <select name="owner">
+                        <option th:each="user : ${users}" th:value="${user[0]}" th:text="${user[0]}" />
                     </select>
                 </td>
             </tr>

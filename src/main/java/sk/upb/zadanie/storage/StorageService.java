@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 public interface StorageService {
     void init();
 
-    void store(MultipartFile file, String newName);
+    void store(MultipartFile file, String newName, String owner);
 
     Stream<Path> loadAll();
 
@@ -37,7 +37,11 @@ public interface StorageService {
 
     void convertDataToCSV(List<String[]> data, String filename);
 
-    void deleteAll();
+    void deleteAll(String filename);
+
+    String getUserKey(String user);
+
+    String getFileOwner(String filename);
 
     Path getRootLocation();
 }
