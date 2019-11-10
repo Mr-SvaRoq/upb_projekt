@@ -38,7 +38,7 @@ public class FileSystemEncryptionService implements IEncryptionService {
     public void regenerate() throws NoSuchAlgorithmException {
         this.secretKey = this.cipherHandler.generateSecretKey();
 //        this.mac = this.cipherHandler.generateMacKey();
-        this.generate = new GenerateKeys(512);
+//        this.generate = new GenerateKeys(512);
         this.generate.createKeys();
     }
 
