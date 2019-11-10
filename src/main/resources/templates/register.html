@@ -11,8 +11,8 @@
 <h1>Register</h1>
 <form method="post" id="form4" action="/register">
     User: <br><input type="text" name="user" required/> <br>
-    Password:<br><input type="password" name="password" required/> <br>
-    Confirm Password:<br><input type="password" name="conFirmpassword" required/> <br>
+    Password:<br><input type="password" name="password" autocomplete="off" required/> <br>
+    Confirm Password:<br><input type="password" name="conFirmpassword" autocomplete="off" required/> <br>
     Public key:<br><textarea name="public_key" id="public_key" cols="30" rows="10" required></textarea><br><p>Delete all new-line characters from the end of entered key...</p>
     <input type="submit" value="Register!" />
 </form>
@@ -33,8 +33,8 @@
 <div th:if="${private_key}">
     <form method="post" id="form3" action="/generate_file">
         <p>You can download them as .txt file as well!</p>
-        <input type="hidden" id="public_key" name="public_key" th:value="${public_key}">
-        <input type="hidden" id="private_key" name="private_key" th:value="${private_key}">
+        <input type="hidden" id="public_key_download" name="public_key_download" th:value="${public_key}">
+        <input type="hidden" id="private_key_download" name="private_key_download" th:value="${private_key}">
         <input type="submit" value="Download keys!" />
     </form>
 </div>
