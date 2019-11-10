@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 public interface IEncryptionService {
     String generatePublicKey();
 
+    void regenerate() throws NoSuchAlgorithmException;
+
     String generatePrivateKey();
 
     void writeToFile(String text, Path filePath) throws IOException;

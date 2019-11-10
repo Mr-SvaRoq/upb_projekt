@@ -1,8 +1,6 @@
 package sk.upb.zadanie;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -25,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sk.upb.zadanie.encryption.IEncryptionService;
+import sk.upb.zadanie.password.HashingHandler;
+import sk.upb.zadanie.password.ValidationHandler;
 import sk.upb.zadanie.storage.Cookies;
 import sk.upb.zadanie.storage.FileNotFoundException;
 import sk.upb.zadanie.storage.StorageService;
@@ -35,22 +35,38 @@ import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.passay.CharacterRule;
+import org.passay.DictionaryRule;
+import org.passay.EnglishCharacterData;
+import org.passay.LengthRule;
+import org.passay.PasswordData;
+import org.passay.PasswordValidator;
+import org.passay.Rule;
+import org.passay.RuleResult;
+import org.passay.WhitespaceRule;
+import org.passay.dictionary.ArrayWordList;
+import org.passay.dictionary.WordListDictionary;
+
 @Controller
 public class FileUploadController {
     private final StorageService storageService;
     private final IEncryptionService encryptionService;
     private final Cookies cookies;
-
+    private final HashingHandler hashingHandler;
+    private final ValidationHandler validationHandler;
     @Autowired
-    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies) {
+    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) {
         this.storageService = storageService;
         this.encryptionService = encryptionService;
         this.cookies = cookies;
+        this.hashingHandler = hashingHandler;
+        this.validationHandler = validationHandler;
     }
 
     //NOT OOP FFS,
     @GetMapping({"/"})
-    public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes)  {
+    public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) throws InvalidKeySpecException, NoSuchAlgorithmException {
+
         List<String[]> data = storageService.convertCSVToData("users.csv");
 //        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
 //            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
@@ -81,7 +97,7 @@ public class FileUploadController {
 
         for (String[] row : data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
-                if (cookies.getCookieValue(request, "userPassword").equals(row[1])) {
+                if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) {
                     model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
 
                     List<List<String>> users = new ArrayList<>();
@@ -96,7 +112,7 @@ public class FileUploadController {
                     return "uploadForm";
                 } else {
                     model.addAttribute("login", "Nastala chyba");
-                    return "redirect:/login";
+                    return "chyba";
                 }
             }
         }
@@ -115,14 +131,17 @@ public class FileUploadController {
     }
 
     @PostMapping({"/login"})
-    public String login(@RequestParam("user") String userName, @RequestParam("password") String password, RedirectAttributes redirectAttributes, HttpServletResponse response) {
+    public String login(@RequestParam("user") String userName, @RequestParam("password") String password, RedirectAttributes redirectAttributes, HttpServletResponse response) throws InvalidKeySpecException, NoSuchAlgorithmException {
         //treba v csv kontroloval, ci existuje user a ci sedi heslo, -> na to osobitny kontroler by trebalo a bude vraciat T/F
         List<String[]> data = storageService.convertCSVToData("users.csv");
         for (String[] row : data) {
             if (userName.equals(row[0])) {
-                if (password.equals(row[1])) {
+//                if (password.equals(row[1])) {
+                String hashPassword = hashingHandler.getPasswordHash(password);
+                if (validationHandler.validatePassword(hashPassword, row[1])) {
+//                if (hashPassword.) {
                     redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
-                    cookies.setCookieUserNamePassword(response, userName, password);
+                    cookies.setCookieUserNamePassword(response, userName, hashPassword);
                     return "redirect:/";
                 } else {
                     redirectAttributes.addFlashAttribute("login", "Zle heslo !");
@@ -139,7 +158,7 @@ public class FileUploadController {
     @GetMapping({"/register"})
     public String register(Model model, HttpServletRequest request) throws IOException {
         String allCookies = cookies.readAllCookies(request);
-        if ( !allCookies.contains("userName=")  && !allCookies.contains("userPassword=")) {
+        if ( allCookies.contains("userName=")  && allCookies.contains("userPassword=")) {
             return "redirect:/";
         } else {
             return "register";
@@ -147,7 +166,7 @@ public class FileUploadController {
     }
 
     @PostMapping({"/register"})
-    public String register(@RequestParam("user") String userName, @RequestParam("password") String password, @RequestParam("conFirmpassword") String conFirmpassword, @RequestParam("public_key") String public_key, RedirectAttributes redirectAttributes, HttpServletResponse response) {
+    public String register(@RequestParam("user") String userName, @RequestParam("password") String password, @RequestParam("conFirmpassword") String conFirmpassword, @RequestParam("public_key") String public_key, RedirectAttributes redirectAttributes, HttpServletResponse response) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         //treba v csv kontroloval, ci existuje user a ci heslo je rovnake ako confirmHeslo a ci to nie Slabe heslo, -> na to osobitny kontroler by trebalo a bude vraciat T/F
 
         List<String[]> data = storageService.convertCSVToData("users.csv");
@@ -158,13 +177,49 @@ public class FileUploadController {
             }
         }
 
-        if (password.equals(conFirmpassword)) {
-            String[] newLine = {userName, password, public_key} ;
+        //TODO tu pridat Danielkine metody, ok OOP zas tu nie je
+        File file = new File("10-million-password-list-top-10000");
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        List<String> listOfWords = new ArrayList<String>();
+        String st;
+        while ((st = br.readLine()) != null) {
+            listOfWords.add(st);
+        }
+        List<String> sorted = listOfWords.stream().sorted().collect(Collectors.toList());
+        String []words = new String[listOfWords.size()];
+        words = sorted.toArray(words);
+
+        WordListDictionary wordListDictionary = new WordListDictionary(
+                new ArrayWordList(words));
+
+        List<Rule> rules = new ArrayList<>();
+        rules.add(new LengthRule(10, 50));
+        rules.add(new WhitespaceRule());
+        rules.add(new CharacterRule(EnglishCharacterData.UpperCase, 1));
+        rules.add(new CharacterRule(EnglishCharacterData.LowerCase, 1));
+        rules.add(new CharacterRule(EnglishCharacterData.Digit, 1));
+        rules.add(new CharacterRule(EnglishCharacterData.Special, 1));
+        rules.add(new DictionaryRule(wordListDictionary));
+
+        PasswordValidator validator = new PasswordValidator(rules);
+        PasswordData passwordData = new PasswordData(password);
+        RuleResult result = validator.validate(passwordData);
+
+        if (result.isValid()) {
+            System.out.println("Password validated.");
+        } else {
+            System.out.println("Invalid Password: " + validator.getMessages(result));
+        }
+
+        //
+        if (password.equals(conFirmpassword) && result.isValid()) {
+            String secureHashPassWord = hashingHandler.getPasswordHash(password);
+            String[] newLine = {userName, secureHashPassWord, public_key} ;
             data.add(newLine);
             this.storageService.convertDataToCSV(data, "users.csv");
 
             redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
-            cookies.setCookieUserNamePassword(response, userName, password);
+            cookies.setCookieUserNamePassword(response, userName, secureHashPassWord);
             return "redirect:/";
         }
         else {
@@ -189,8 +244,9 @@ public class FileUploadController {
     }
 
     @PostMapping({"/generate_key"})
-    public String generateKeys(@RequestParam("origin") String origin, RedirectAttributes redirectAttributes) throws java.io.FileNotFoundException {
+    public String generateKeys(@RequestParam("origin") String origin, RedirectAttributes redirectAttributes) throws java.io.FileNotFoundException, NoSuchAlgorithmException {
 
+        encryptionService.regenerate();
         redirectAttributes.addFlashAttribute("public_key", encryptionService.generatePublicKey());
         redirectAttributes.addFlashAttribute("private_key", encryptionService.generatePrivateKey());
 
@@ -199,7 +255,7 @@ public class FileUploadController {
 
     @PostMapping({"/generate_file"})
     @ResponseBody
-    public ResponseEntity<Resource> serveFileWithKeys(@RequestParam("public_key") String public_key, @RequestParam("private_key") String private_key) throws IOException {
+    public ResponseEntity<Resource> serveFileWithKeys(@RequestParam("public_key_download") String public_key, @RequestParam("private_key_download") String private_key) throws IOException {
         File file = new File("keys.txt");
 
         if (file.createNewFile()) {

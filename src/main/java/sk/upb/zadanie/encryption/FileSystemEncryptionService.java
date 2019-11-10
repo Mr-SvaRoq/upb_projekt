@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class FileSystemEncryptionService implements IEncryptionService {
     private final CipherHandler cipherHandler = new CipherHandler();
-    private final SecretKey secretKey;
+    private SecretKey secretKey;
 //    private final SecretKey mac;
     private byte[] iv;
     private byte[] cipher;
@@ -31,6 +31,14 @@ public class FileSystemEncryptionService implements IEncryptionService {
         this.secretKey = this.cipherHandler.generateSecretKey();
 //        this.mac = this.cipherHandler.generateMacKey();
         this.generate = new GenerateKeys(512);
+        this.generate.createKeys();
+    }
+
+    @Override
+    public void regenerate() throws NoSuchAlgorithmException {
+        this.secretKey = this.cipherHandler.generateSecretKey();
+//        this.mac = this.cipherHandler.generateMacKey();
+//        this.generate = new GenerateKeys(512);
         this.generate.createKeys();
     }
 
