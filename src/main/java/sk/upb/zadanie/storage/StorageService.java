@@ -31,6 +31,8 @@ public interface StorageService {
     //Dostane List z csv
     List<String[]> convertCSVToData(String filename);
 
+    void convertDataToCSV(List<String[]> data, String filename);
+
     void deleteAll();
 
     Path getRootLocation();

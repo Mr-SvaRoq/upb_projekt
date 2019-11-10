@@ -126,6 +126,18 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
+    public void convertDataToCSV(List<String[]> data, String filename) {
+        File csvOutputFile = new File(filename);
+        try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
+            data.stream()
+                    .map(this::convertLineToCSVFormat)
+                    .forEach(pw::println);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public List<String[]> convertCSVToData(String filename) {
         List<String[]> records = new ArrayList<>();
         try (CSVReader csvReader = new CSVReader(new FileReader(filename))) {

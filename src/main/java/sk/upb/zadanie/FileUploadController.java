@@ -112,7 +112,6 @@ public class FileUploadController {
 //        }).collect(Collectors.toList()));
     }
 
-    //TODO DOROBIT ZAPISOVANIE DO CSV
     @PostMapping({"/register"})
     public String register(@RequestParam("user") String userName, @RequestParam("password") String password, @RequestParam("conFirmpassword") String conFirmpassword, RedirectAttributes redirectAttributes, HttpServletResponse response) {
         //treba v csv kontroloval, ci existuje user a ci heslo je rovnake ako confirmHeslo a ci to nie Slabe heslo, -> na to osobitny kontroler by trebalo a bude vraciat T/F
@@ -135,13 +134,15 @@ public class FileUploadController {
 
         if (password.equals(conFirmpassword)) {
             String[] newLine = {"ideecko originalne treba vymysliet", userName, password} ;
-            String newLineInCSVformat = storageService.convertLineToCSVFormat(newLine);
-            //treba pridat do CSV uzivatelov
+            data.add(newLine);
+            this.storageService.convertDataToCSV(data, "users.csv");
+
             redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
+            cookies.setCookie(response, userName);
             return "redirect:/";
         }
         else {
-            redirectAttributes.addFlashAttribute("loginBad", "Nezhodne miesta!");
+            redirectAttributes.addFlashAttribute("loginBad", "Nezhodne hesla!");
             return "redirect:/register";
         }
     }
