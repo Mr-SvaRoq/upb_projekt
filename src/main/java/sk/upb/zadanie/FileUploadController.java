@@ -66,7 +66,7 @@ public class FileUploadController {
     //NOT OOP FFS,
     @GetMapping({"/"})
     public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) throws InvalidKeySpecException, NoSuchAlgorithmException {
-
+        //Skuska
         List<String[]> data = storageService.convertCSVToData("users.csv");
         model.addAttribute("files", this.storageService.loadAll().map((path) -> {
             return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
