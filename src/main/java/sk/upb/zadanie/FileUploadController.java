@@ -76,14 +76,21 @@ public class FileUploadController {
             return "redirect:/login";
         }
 
-        //validationHandler.validatePassword
         for (String[] row : data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
-//                if (cookies.getCookieValue(request, "userPassword").equals(row[1])) {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) {
-                    //TODO meno prihlasenie, po refresh
-//                    redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
                     model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+
+                    List<List<String>> users = new ArrayList<>();
+
+                    for (String[] user_data : data) {
+                        List<String> user = new ArrayList<>();
+                        user.add(user_data[0]);
+                        user.add(user_data[2]);
+                        users.add(user);
+                        model.addAttribute("users", users);
+                    }
+
                     return "uploadForm";
                 } else {
                     model.addAttribute("login", "Nastala chyba");
@@ -250,7 +257,6 @@ public class FileUploadController {
 
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") String key, @RequestParam("action") String action, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
-        //switch pre encrypt metodu alebo decrypt
         String filename = "";
         switch (action) {
             case "encrypt-rsa":

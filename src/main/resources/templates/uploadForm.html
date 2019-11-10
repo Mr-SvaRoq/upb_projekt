@@ -20,12 +20,17 @@
             <tr>
                 <td>File to upload:</td><td><input type="file" name="file" required/></td>
             </tr>
-            <tr>
-                <td>Key to upload:</td><td><textarea name="key" id="" cols="30" rows="10" required></textarea></td><td>Delete all new-line characters from the end of entered key...</td>
+            <tr id="keys">
+                <td>Key to upload:</td>
+                <td>
+                    <select name="key">
+                        <option th:each="user : ${users}" th:value="${user[1]}" th:text="${user[0]}" />
+                    </select>
+                </td>
             </tr>
             <tr>
                 <td>
-                    <select name="action">
+                    <select id="action" name="action" onchange="keys_f()">
                     <option value="encrypt-rsa">Encrypt</option>
                     <option value="decrypt-rsa">Decrypt</option>
                 </select>
@@ -73,11 +78,20 @@
 
 <!--<button onclick="myFunction()">Replace document</button>-->
 
-<!--<script>-->
-<!--    function myFunction() {-->
-<!--        location.replace("/skuska")-->
-<!--    }-->
-<!--</script>-->
+<script>
+    var keys = document.getElementById("keys");
+    var public_key_list = keys.innerHTML;
+    var action = document.getElementById("action");
+    function keys_f() {
+        keys.innerHTML = "";
+        var value = action.options[action.selectedIndex].value;
+        if (value === "encrypt-rsa") {
+            keys.innerHTML = public_key_list;
+        } else {
+            keys.innerHTML = '<td>Key to upload:</td><td><textarea name="key" id="" cols="30" rows="10" required></textarea></td><td>Delete all new-line characters from the end of entered key...</td>';
+        }
+    }
+</script>
 
 </body>
 </html>
