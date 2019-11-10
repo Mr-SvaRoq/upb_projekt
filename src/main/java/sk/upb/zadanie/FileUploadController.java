@@ -49,16 +49,31 @@ public class FileUploadController {
 
     //NOT OOP FFS,
     @GetMapping({"/"})
-    public String listUploadedFiles(Model model, HttpServletRequest request) throws IOException {
+    public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes)  {
+
+        List<String[]> data = storageService.convertCSVToData("users.csv");
         model.addAttribute("files", this.storageService.loadAll().map((path) -> {
             return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
         }).collect(Collectors.toList()));
         String allCookies = cookies.readAllCookies(request);
-        if (allCookies.contains("userName=")){
-            return "uploadForm";
-        } else {
+        if ( !allCookies.contains("userName=")  && !allCookies.contains("userPassword=")) {
             return "redirect:/login";
         }
+
+        for (String[] row : data) {
+            if (cookies.getCookieValue(request, "userName").equals(row[1])) {
+                if (cookies.getCookieValue(request, "userPassword").equals(row[2])) {
+                    //TODO meno prihlasenie, po refresh
+                    redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+                    redirectAttributes.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+                    return "uploadForm";
+                } else {
+                    redirectAttributes.addFlashAttribute("login", "Nastala chyba");
+                    return "redirect:/login";
+                }
+            }
+        }
+        return "redirect:/login";
     }
 
     /****************FUJ OOP TREBA*********************/
@@ -70,10 +85,6 @@ public class FileUploadController {
         } else {
             return "login";
         }
-        // neviem co je ten model, ale nechal som to hu
-//        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
-//            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
-//        }).collect(Collectors.toList()));
     }
 
     @PostMapping({"/login"})
@@ -84,7 +95,7 @@ public class FileUploadController {
             if (userName.equals(row[1])) {
                 if (password.equals(row[2])) {
                     redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
-                    cookies.setCookie(response, userName);
+                    cookies.setCookieUserNamePassword(response, userName, password);
                     return "redirect:/";
                 } else {
                     redirectAttributes.addFlashAttribute("login", "Zle heslo !");
@@ -123,7 +134,7 @@ public class FileUploadController {
             }
 //                if (password.equals(row[2])) {
 //                    redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
-//                    cookies.setCookie(response, userName);
+//                    cookies.setCookieUserNamePassword(response, userName);
 //                    return "redirect:/";
 //                } else {
 //                    redirectAttributes.addFlashAttribute("login", "Zle heslo !");
@@ -138,7 +149,7 @@ public class FileUploadController {
             this.storageService.convertDataToCSV(data, "users.csv");
 
             redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
-            cookies.setCookie(response, userName);
+            cookies.setCookieUserNamePassword(response, userName, password);
             return "redirect:/";
         }
         else {

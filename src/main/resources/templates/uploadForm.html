@@ -7,11 +7,12 @@
 
 
 <div th:if="${login}">
-    <form method="post" id="form5" action="/logOut">
-        <h2 th:text="${login}"/>
-        <input type="submit" value="Log out!" />
-    </form>
+    <h2 th:text="${login}"/>
 </div>
+
+<form method="post" id="form5" action="/logOut">
+    <input type="submit" value="Log out!" />
+</form>
 
 <div>
     <form id="form" method="POST" enctype="multipart/form-data" action="/">
