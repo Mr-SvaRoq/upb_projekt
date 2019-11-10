@@ -91,4 +91,14 @@ public class FileSystemEncryptionService implements IEncryptionService {
         String decipheredText = new String(plain);
         this.writeToFile(decipheredText, filePath);
     }
+
+    @Override
+    public PublicKey checkPublicKey(byte[] publicKey) {
+        try {
+            return rsaHandler.getPublic(publicKey);
+        } catch (Exception e) {
+            System.out.println("zle");
+        }
+        return null;
+    }
 }

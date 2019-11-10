@@ -3,8 +3,7 @@ package sk.upb.zadanie;
 import java.io.*;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sk.upb.zadanie.encryption.IEncryptionService;
+import sk.upb.zadanie.encryption.RSAHandler;
 import sk.upb.zadanie.password.HashingHandler;
 import sk.upb.zadanie.password.ValidationHandler;
 import sk.upb.zadanie.storage.Cookies;
@@ -54,8 +54,10 @@ public class FileUploadController {
     private final Cookies cookies;
     private final HashingHandler hashingHandler;
     private final ValidationHandler validationHandler;
+    private int counter = 0;
+
     @Autowired
-    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) {
+    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) throws NoSuchPaddingException, NoSuchAlgorithmException {
         this.storageService = storageService;
         this.encryptionService = encryptionService;
         this.cookies = cookies;
@@ -65,8 +67,8 @@ public class FileUploadController {
 
     //NOT OOP FFS,
     @GetMapping({"/"})
-    public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) throws InvalidKeySpecException, NoSuchAlgorithmException {
-
+    public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes, HttpServletResponse response) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        //Skuska
         List<String[]> data = storageService.convertCSVToData("users.csv");
 //        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
 //            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
@@ -97,7 +99,7 @@ public class FileUploadController {
 
         for (String[] row : data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
-                if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) {
+                if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
                     model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
 
                     List<List<String>> users = new ArrayList<>();
@@ -108,7 +110,7 @@ public class FileUploadController {
                         users.add(user);
                         model.addAttribute("users", users);
                     }
-
+                    counter = 0;
                     return "uploadForm";
                 } else {
                     model.addAttribute("login", "Nastala chyba");
@@ -121,13 +123,36 @@ public class FileUploadController {
 
     /****************FUJ OOP TREBA*********************/
     @GetMapping({"/login"})
-    public String login(Model model, HttpServletRequest request){
-        String allCookies = cookies.readAllCookies(request);
-        if ( allCookies.contains("userName=")  && allCookies.contains("userPassword=")) {
-            return "redirect:/";
-        } else {
-            return "login";
+    public String login(Model model, HttpServletRequest request) {
+        if (counter  == 5) {
+            TimerTask task = new TimerTask() {
+                public void run() {
+                    System.out.println("I am coming");
+                    counter = 0;
+                }
+            };
+            Timer timer = new Timer("Timer");
+
+            long delay = 10000L;
+            timer.schedule(task, delay);
+            return "chyba";
         }
+
+        String allCookies = cookies.readAllCookies(request);
+        List<String[]> data = storageService.convertCSVToData("users.csv");
+
+        for (String[] row : data) {
+            if (allCookies.contains("userName=") && allCookies.contains("userPassword=") && cookies.getCookieValue(request, "userName").equals(row[0]) && cookies.getCookieValue(request, "userPassword").equals(row[1])) {
+                return "redirect:/";
+            }
+        }
+        return "login";
+
+//        if (allCookies.contains("userName=") && allCookies.contains("userPassword=")) {
+//            return "redirect:/";
+//        } else {
+//            return "login";
+//        }
     }
 
     @PostMapping({"/login"})
@@ -145,11 +170,13 @@ public class FileUploadController {
                     return "redirect:/";
                 } else {
                     redirectAttributes.addFlashAttribute("login", "Zle heslo !");
+                    counter++;
                     return "redirect:/login";
                 }
             }
         }
         redirectAttributes.addFlashAttribute("login", "Nenasiel sa user!");
+        counter++;
         return "redirect:/login";
     }
     /*************************************/
@@ -212,6 +239,11 @@ public class FileUploadController {
         }
 
         //
+//        if (encryptionService.checkPublicKey(public_key.getBytes()) == null) {
+//            redirectAttributes.addFlashAttribute("loginBad", "Zly public key!");
+//            return "redirect:/register";
+//        }
+
         if (password.equals(conFirmpassword) && result.isValid()) {
             String secureHashPassWord = hashingHandler.getPasswordHash(password);
             String[] newLine = {userName, secureHashPassWord, public_key} ;
