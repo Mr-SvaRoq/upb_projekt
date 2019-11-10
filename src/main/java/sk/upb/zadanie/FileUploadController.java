@@ -56,7 +56,7 @@ public class FileUploadController {
             return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
         }).collect(Collectors.toList()));
         String allCookies = cookies.readAllCookies(request);
-        if ( !allCookies.contains("userName=")  && !allCookies.contains("userPassword=")) {
+        if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
         }
 

@@ -70,13 +70,20 @@ public class Cookies {
     //deleteCookie vymaze cookie s nazvom userId
     public String deleteCookie(HttpServletResponse response){
 
-        Cookie cookie = new Cookie("userName", null);
-        cookie.setMaxAge(0);
-        cookie.setHttpOnly(true);
+        Cookie cookieUserName = new Cookie("userName", null);
+        cookieUserName.setMaxAge(0);
+        cookieUserName.setHttpOnly(true);
+        cookieUserName.setPath("/");
 
-        cookie.setPath("/");
 
-        response.addCookie(cookie);
+        Cookie cookiePassword = new Cookie("password", null);
+        cookiePassword.setMaxAge(0);
+        cookiePassword.setHttpOnly(true);
+        cookiePassword.setPath("/");
+
+
+        response.addCookie(cookieUserName);
+        response.addCookie(cookiePassword);
         return "Cookie deleted!";
     }
 }
