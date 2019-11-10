@@ -2,6 +2,7 @@ HELP.md
 target/
 upload-dir/
 db.csv
+users.csv
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**
