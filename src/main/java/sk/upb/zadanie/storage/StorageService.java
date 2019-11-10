@@ -16,6 +16,8 @@ public interface StorageService {
 
     Path load(String filename);
 
+    Boolean checkIfFileExist(String filename);
+
     Resource loadAsResource(String filename, boolean path) throws java.io.FileNotFoundException;
 
     String createUniqueName();

@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+keys.txt
+out/artifacts/ROOT/ROOT.war

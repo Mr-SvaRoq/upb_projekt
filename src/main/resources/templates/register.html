@@ -13,6 +13,7 @@
     User: <br><input type="text" name="user" required/> <br>
     Password:<br><input type="password" name="password" required/> <br>
     Confirm Password:<br><input type="password" name="conFirmpassword" required/> <br>
+    Public key:<br><textarea name="public_key" id="public_key" cols="30" rows="10" required></textarea><br><p>Delete all new-line characters from the end of entered key...</p>
     <input type="submit" value="Register!" />
 </form>
 <div th:if="${loginBad}">
@@ -20,6 +21,7 @@
 </div>
 <form method="post" id="form2" action="/generate_key">
     <h3>Don't have public and private key? Generate them!</h3>
+    <input type="hidden" id="origin" name="origin" value="register">
     <input type="submit" value="Generate keys!" />
 </form>
 <div th:if="${public_key}" style="max-width: 50%">

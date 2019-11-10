@@ -36,6 +36,16 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
+    public Boolean checkIfFileExist(String filePath) {
+        File f = new File(filePath);
+        if(f.exists() && !f.isDirectory()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public void store(MultipartFile file, String newName) {
         String newFilename = newName;
         String filename = StringUtils.cleanPath(file.getOriginalFilename());

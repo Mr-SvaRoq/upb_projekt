@@ -117,34 +117,22 @@ public class FileUploadController {
         } else {
             return "register";
         }
-        // neviem co je ten model, ale nechal som to hu
-//        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
-//            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
-//        }).collect(Collectors.toList()));
     }
 
     @PostMapping({"/register"})
-    public String register(@RequestParam("user") String userName, @RequestParam("password") String password, @RequestParam("conFirmpassword") String conFirmpassword, RedirectAttributes redirectAttributes, HttpServletResponse response) {
+    public String register(@RequestParam("user") String userName, @RequestParam("password") String password, @RequestParam("conFirmpassword") String conFirmpassword, @RequestParam("public_key") String public_key, RedirectAttributes redirectAttributes, HttpServletResponse response) {
         //treba v csv kontroloval, ci existuje user a ci heslo je rovnake ako confirmHeslo a ci to nie Slabe heslo, -> na to osobitny kontroler by trebalo a bude vraciat T/F
+
         List<String[]> data = storageService.convertCSVToData("users.csv");
         for (String[] row : data) {
             if (userName.equals(row[1])) {
                 redirectAttributes.addFlashAttribute("loginBad", "uzivatel existuje: " + userName);
                 return "redirect:/register";
             }
-//                if (password.equals(row[2])) {
-//                    redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
-//                    cookies.setCookieUserNamePassword(response, userName);
-//                    return "redirect:/";
-//                } else {
-//                    redirectAttributes.addFlashAttribute("login", "Zle heslo !");
-//                    return "redirect:/login";
-//                }
-//            }
         }
 
         if (password.equals(conFirmpassword)) {
-            String[] newLine = {"ideecko originalne treba vymysliet", userName, password} ;
+            String[] newLine = {userName, password, public_key} ;
             data.add(newLine);
             this.storageService.convertDataToCSV(data, "users.csv");
 
@@ -176,12 +164,12 @@ public class FileUploadController {
     }
 
     @PostMapping({"/generate_key"})
-    public String generateKeys(RedirectAttributes redirectAttributes) throws java.io.FileNotFoundException {
+    public String generateKeys(@RequestParam("origin") String origin, RedirectAttributes redirectAttributes) throws java.io.FileNotFoundException {
 
         redirectAttributes.addFlashAttribute("public_key", encryptionService.generatePublicKey());
         redirectAttributes.addFlashAttribute("private_key", encryptionService.generatePrivateKey());
 
-        return "redirect:/";
+        return "redirect:/" + origin;
     }
 
     @PostMapping({"/generate_file"})
@@ -207,13 +195,33 @@ public class FileUploadController {
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") String key, @RequestParam("action") String action, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         //switch pre encrypt metodu alebo decrypt
+        String filename = "";
         switch (action) {
             case "encrypt-rsa":
-                this.encryptionService.encryptRSA(file, this.storageService.load(file.getOriginalFilename()), key);
+                if (!storageService.checkIfFileExist(storageService.load("Encrypted-" + file.getOriginalFilename()).toString())) {
+                    filename = "Encrypted-" + file.getOriginalFilename();
+                } else {
+                    int i = 1;
+                    while(storageService.checkIfFileExist(storageService.load("Encrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
+                        i++;
+                    }
+                    filename = "Encrypted-(" + i + ")-" + file.getOriginalFilename();
+                }
+                storageService.store(file, filename);
+                this.encryptionService.encryptRSA(file, this.storageService.load(filename), key);
                 break;
             case "decrypt-rsa":
-                storageService.store(file, "Decrypted-" + file.getOriginalFilename());
-                this.encryptionService.decryptRSA(file, this.storageService.load("Decrypted-" + file.getOriginalFilename()), key);
+                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
+                    filename = "Decrypted-" + file.getOriginalFilename();
+                } else {
+                    int i = 1;
+                    while(storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
+                        i++;
+                    }
+                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
+                }
+                storageService.store(file, filename);
+                this.encryptionService.decryptRSA(file, this.storageService.load(filename), key);
                 break;
             default:
                 System.out.println("Nieco sa pokazilo...");

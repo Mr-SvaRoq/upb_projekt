@@ -36,6 +36,7 @@
     </form>
     <form method="post" id="form2" action="/generate_key">
         <h3>Don't have public and private key? Generate them!</h3>
+        <input type="hidden" id="origin" name="origin" value="">
         <input type="submit" value="Generate keys!" />
     </form>
     <div th:if="${public_key}" style="max-width: 50%">
