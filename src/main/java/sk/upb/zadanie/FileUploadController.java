@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,7 +51,6 @@ public class FileUploadController {
     //NOT OOP FFS,
     @GetMapping({"/"})
     public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes)  {
-
         List<String[]> data = storageService.convertCSVToData("users.csv");
         model.addAttribute("files", this.storageService.loadAll().map((path) -> {
             return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
@@ -63,12 +63,21 @@ public class FileUploadController {
         for (String[] row : data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
                 if (cookies.getCookieValue(request, "userPassword").equals(row[1])) {
-                    //TODO meno prihlasenie, po refresh
-                    redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
-                    redirectAttributes.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+                    model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+
+                    List<List<String>> users = new ArrayList<>();
+
+                    for (String[] user_data : data) {
+                        List<String> user = new ArrayList<>();
+                        user.add(user_data[0]);
+                        user.add(user_data[2]);
+                        users.add(user);
+                        model.addAttribute("users", users);
+                    }
+
                     return "uploadForm";
                 } else {
-                    redirectAttributes.addFlashAttribute("login", "Nastala chyba");
+                    model.addAttribute("login", "Nastala chyba");
                     return "redirect:/login";
                 }
             }
@@ -192,7 +201,6 @@ public class FileUploadController {
 
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("key") String key, @RequestParam("action") String action, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
-        //switch pre encrypt metodu alebo decrypt
         String filename = "";
         switch (action) {
             case "encrypt-rsa":
