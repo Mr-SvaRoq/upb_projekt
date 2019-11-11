@@ -11,13 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sk.upb.zadanie.encryption.IEncryptionService;
-import sk.upb.zadanie.password.HashingHandler;
-import sk.upb.zadanie.password.ValidationHandler;
-import sk.upb.zadanie.storage.Cookies;
 import sk.upb.zadanie.storage.FileNotFoundException;
 import sk.upb.zadanie.storage.StorageService;
 
-import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -29,7 +25,7 @@ public class GenerateKey {
     private final IEncryptionService encryptionService;
 
     @Autowired
-    public GenerateKey(StorageService storageService, IEncryptionService encryptionService ) {
+    public GenerateKey(StorageService storageService, IEncryptionService encryptionService) {
         this.storageService = storageService;
         this.encryptionService = encryptionService;
     }

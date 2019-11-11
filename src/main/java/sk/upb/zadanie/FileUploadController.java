@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sk.upb.zadanie.encryption.IEncryptionService;
-import sk.upb.zadanie.password.HashingHandler;
 import sk.upb.zadanie.password.ValidationHandler;
 import sk.upb.zadanie.storage.Cookies;
 import sk.upb.zadanie.storage.FileNotFoundException;
@@ -21,7 +20,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -46,14 +44,9 @@ public class FileUploadController {
         this.validationHandler = validationHandler;
     }
 
-    //NOT OOP FFS,
     @GetMapping({"/"})
     public String listUploadedFiles(Model model, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        //Skuska
         List<String[]> data = storageService.convertCSVToData("users.csv");
-//        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
-//            return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
-//        }).collect(Collectors.toList()));
 
         String allCookies = cookies.readAllCookies(request);
         if (!allCookies.contains("userName=") || !allCookies.contains("userPassword=")) {

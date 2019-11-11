@@ -6,16 +6,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import sk.upb.zadanie.encryption.IEncryptionService;
-import sk.upb.zadanie.password.HashingHandler;
-import sk.upb.zadanie.password.ValidationHandler;
 import sk.upb.zadanie.storage.Cookies;
 import sk.upb.zadanie.storage.FileNotFoundException;
-import sk.upb.zadanie.storage.StorageService;
-
-import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletResponse;
-import java.security.NoSuchAlgorithmException;
 
 @Controller
 public class LogoutController {

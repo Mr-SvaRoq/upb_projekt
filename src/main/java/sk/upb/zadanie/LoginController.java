@@ -3,20 +3,17 @@ package sk.upb.zadanie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import sk.upb.zadanie.encryption.IEncryptionService;
 import sk.upb.zadanie.password.HashingHandler;
 import sk.upb.zadanie.password.ValidationHandler;
 import sk.upb.zadanie.storage.Cookies;
 import sk.upb.zadanie.storage.FileNotFoundException;
 import sk.upb.zadanie.storage.StorageService;
 
-import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +39,8 @@ public class LoginController {
     }
 
     @GetMapping({"/login"})
-    public String login(Model model, HttpServletRequest request) {
+    public String login(HttpServletRequest request) {
+        //TODO prerobit podla toho ako to chcem ja :D
         if (counter  == 5) {
             TimerTask task = new TimerTask() {
                 public void run() {
@@ -66,12 +64,6 @@ public class LoginController {
             }
         }
         return "login";
-
-//        if (allCookies.contains("userName=") && allCookies.contains("userPassword=")) {
-//            return "redirect:/";
-//        } else {
-//            return "login";
-//        }
     }
 
     @PostMapping({"/login"})
@@ -80,10 +72,8 @@ public class LoginController {
         List<String[]> data = storageService.convertCSVToData("users.csv");
         for (String[] row : data) {
             if (userName.equals(row[0])) {
-//                if (password.equals(row[1])) {
                 String hashPassword = hashingHandler.getPasswordHash(password);
                 if (validationHandler.validatePassword(hashPassword, row[1])) {
-//                if (hashPassword.) {
                     redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
                     cookies.setCookieUserNamePassword(response, userName, hashPassword);
                     counter = 0;
