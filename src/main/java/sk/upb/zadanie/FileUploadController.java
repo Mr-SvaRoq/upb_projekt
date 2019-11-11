@@ -48,7 +48,7 @@ public class FileUploadController {
 
     //NOT OOP FFS,
     @GetMapping({"/"})
-    public String listUploadedFiles(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes, HttpServletResponse response) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public String listUploadedFiles(Model model, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
         //Skuska
         List<String[]> data = storageService.convertCSVToData("users.csv");
 //        model.addAttribute("files", this.storageService.loadAll().map((path) -> {
@@ -88,7 +88,6 @@ public class FileUploadController {
                         users.add(user);
                         model.addAttribute("users", users);
                     }
-                    counter = 0;
                     return "uploadForm";
                 } else {
                     model.addAttribute("login", "Nastala chyba");

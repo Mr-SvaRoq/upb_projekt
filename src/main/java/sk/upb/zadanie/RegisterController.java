@@ -47,7 +47,7 @@ public class RegisterController {
     }
 
     @GetMapping({"/register"})
-    public String register(Model model, HttpServletRequest request) throws IOException {
+    public String register(HttpServletRequest request) {
         String allCookies = cookies.readAllCookies(request);
         if ( allCookies.contains("userName=")  && allCookies.contains("userPassword=")) {
             return "redirect:/";

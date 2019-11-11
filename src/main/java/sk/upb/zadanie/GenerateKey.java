@@ -35,7 +35,7 @@ public class GenerateKey {
     }
 
     @PostMapping({"/generate_key"})
-    public String generateKeys(@RequestParam("origin") String origin, RedirectAttributes redirectAttributes) throws java.io.FileNotFoundException, NoSuchAlgorithmException {
+    public String generateKeys(@RequestParam("origin") String origin, RedirectAttributes redirectAttributes) throws NoSuchAlgorithmException {
 
         encryptionService.regenerate();
         redirectAttributes.addFlashAttribute("public_key", encryptionService.generatePublicKey());

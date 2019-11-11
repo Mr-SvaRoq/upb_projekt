@@ -86,6 +86,7 @@ public class LoginController {
 //                if (hashPassword.) {
                     redirectAttributes.addFlashAttribute("login", "Prihlaseny: " + userName);
                     cookies.setCookieUserNamePassword(response, userName, hashPassword);
+                    counter = 0;
                     return "redirect:/";
                 } else {
                     redirectAttributes.addFlashAttribute("login", "Zle heslo !");
