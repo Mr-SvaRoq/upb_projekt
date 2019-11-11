@@ -35,19 +35,15 @@ import java.util.stream.Collectors;
 @Controller
 public class RegisterController {
     private final StorageService storageService;
-    private final IEncryptionService encryptionService;
     private final Cookies cookies;
     private final HashingHandler hashingHandler;
-    private final ValidationHandler validationHandler;
     private int counter = 0;
 
     @Autowired
-    public RegisterController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) throws NoSuchPaddingException, NoSuchAlgorithmException {
+    public RegisterController(StorageService storageService, Cookies cookies, HashingHandler hashingHandler) {
         this.storageService = storageService;
-        this.encryptionService = encryptionService;
         this.cookies = cookies;
         this.hashingHandler = hashingHandler;
-        this.validationHandler = validationHandler;
     }
 
     @GetMapping({"/register"})
@@ -72,7 +68,7 @@ public class RegisterController {
             }
         }
 
-        //TODO tu pridat Danielkine metody, ok OOP zas tu nie je
+        //TODO OOP, treba dat vonku, to ja spravim
         File file = new File("10-million-password-list-top-10000");
         BufferedReader br = new BufferedReader(new FileReader(file));
         List<String> listOfWords = new ArrayList<String>();

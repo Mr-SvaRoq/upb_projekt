@@ -36,16 +36,13 @@ public class FileUploadController {
     private final StorageService storageService;
     private final IEncryptionService encryptionService;
     private final Cookies cookies;
-    private final HashingHandler hashingHandler;
     private final ValidationHandler validationHandler;
-    private int counter = 0;
 
     @Autowired
-    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) throws NoSuchPaddingException, NoSuchAlgorithmException {
+    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, ValidationHandler validationHandler) {
         this.storageService = storageService;
         this.encryptionService = encryptionService;
         this.cookies = cookies;
-        this.hashingHandler = hashingHandler;
         this.validationHandler = validationHandler;
     }
 
@@ -59,7 +56,7 @@ public class FileUploadController {
 //        }).collect(Collectors.toList()));
 
         String allCookies = cookies.readAllCookies(request);
-        if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
+        if (!allCookies.contains("userName=") || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
         }
 
@@ -106,7 +103,7 @@ public class FileUploadController {
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws java.io.FileNotFoundException {
         Resource file = this.storageService.loadAsResource(filename, true);
-        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
+        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
     }
 
     @PostMapping({"/"})
@@ -118,7 +115,7 @@ public class FileUploadController {
                     filename = file.getOriginalFilename();
                 } else {
                     int i = 1;
-                    while(storageService.checkIfFileExist(storageService.load("(" + i + ")-" + file.getOriginalFilename()).toString())) {
+                    while (storageService.checkIfFileExist(storageService.load("(" + i + ")-" + file.getOriginalFilename()).toString())) {
                         i++;
                     }
                     filename = "(" + i + ")-" + file.getOriginalFilename();
@@ -135,7 +132,7 @@ public class FileUploadController {
                     filename = "Decrypted-" + file.getOriginalFilename();
                 } else {
                     int i = 1;
-                    while(storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
+                    while (storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
                         i++;
                     }
                     filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();

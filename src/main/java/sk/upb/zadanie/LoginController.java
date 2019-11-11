@@ -28,16 +28,14 @@ import java.util.TimerTask;
 @Controller
 public class LoginController {
     private final StorageService storageService;
-    private final IEncryptionService encryptionService;
     private final Cookies cookies;
     private final HashingHandler hashingHandler;
     private final ValidationHandler validationHandler;
     private int counter = 0;
 
     @Autowired
-    public LoginController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) throws NoSuchPaddingException, NoSuchAlgorithmException {
+    public LoginController(StorageService storageService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) {
         this.storageService = storageService;
-        this.encryptionService = encryptionService;
         this.cookies = cookies;
         this.hashingHandler = hashingHandler;
         this.validationHandler = validationHandler;

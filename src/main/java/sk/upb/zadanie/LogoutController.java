@@ -19,20 +19,11 @@ import java.security.NoSuchAlgorithmException;
 
 @Controller
 public class LogoutController {
-    private final StorageService storageService;
-    private final IEncryptionService encryptionService;
     private final Cookies cookies;
-    private final HashingHandler hashingHandler;
-    private final ValidationHandler validationHandler;
-    private int counter = 0;
 
     @Autowired
-    public LogoutController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) throws NoSuchPaddingException, NoSuchAlgorithmException {
-        this.storageService = storageService;
-        this.encryptionService = encryptionService;
+    public LogoutController(Cookies cookies) {
         this.cookies = cookies;
-        this.hashingHandler = hashingHandler;
-        this.validationHandler = validationHandler;
     }
 
     @PostMapping({"/logOut"})

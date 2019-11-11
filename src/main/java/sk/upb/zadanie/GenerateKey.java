@@ -27,18 +27,11 @@ import java.security.NoSuchAlgorithmException;
 public class GenerateKey {
     private final StorageService storageService;
     private final IEncryptionService encryptionService;
-    private final Cookies cookies;
-    private final HashingHandler hashingHandler;
-    private final ValidationHandler validationHandler;
-    private int counter = 0;
 
     @Autowired
-    public GenerateKey(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, HashingHandler hashingHandler, ValidationHandler validationHandler) throws NoSuchPaddingException, NoSuchAlgorithmException {
+    public GenerateKey(StorageService storageService, IEncryptionService encryptionService ) {
         this.storageService = storageService;
         this.encryptionService = encryptionService;
-        this.cookies = cookies;
-        this.hashingHandler = hashingHandler;
-        this.validationHandler = validationHandler;
     }
 
     @PostMapping({"/generate_key"})
