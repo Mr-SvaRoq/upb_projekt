@@ -83,10 +83,14 @@ public class FileUploadController {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
                     model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
-                    List files_roots = this.storageService.loadAll().map((path) -> {
-                        return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
-                    }).collect(Collectors.toList());
 
+                    //Toto potrebovat nebudeme - minimalne v tejto forme
+
+//                    List files_roots = this.storageService.loadAll().map((path) -> {
+//                        return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "fileDetail", new Object[]{path.getFileName().toString()}).build().toString();
+//                    }).collect(Collectors.toList());
+
+                    List files_roots = this.storageService.loadAll().collect(Collectors.toList());
                     List<List<String>> files = new ArrayList<>();
 
                     for (Object file_root : files_roots) {
@@ -258,11 +262,61 @@ public class FileUploadController {
     }
     /*************************************/
 
-    @GetMapping({"/files/{filename:.+}"})
+    //Toto bude spracovavat podnet na stahovanie suborov, ale treba este pridat parameter toho, co sa to ma stiahnut sifrovane,
+    // alebo nie... plus by sa mala preniest informacia o uzivatelovi, ci je lognuty, ci ma prava a hlavne kto to je,
+    // lebo vsak potrebujes jeho public key
+    @GetMapping({"/download/{filename:.+}"})
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws java.io.FileNotFoundException {
         Resource file = this.storageService.loadAsResource(filename, true);
         return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
+    }
+
+    //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
+    @GetMapping({"/files/{filename:.+}"})
+    public String fileDetail(Model model, HttpServletRequest request, @PathVariable String filename) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        List<String[]> data = storageService.convertCSVToData("users.csv");
+
+        String allCookies = cookies.readAllCookies(request);
+        if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
+            return "redirect:/login";
+        }
+
+        for (String[] row : data) {
+            if (cookies.getCookieValue(request, "userName").equals(row[0])) {
+                if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
+                    model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+                    List files_roots = this.storageService.loadAll().map((path) -> {
+                        return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
+                    }).collect(Collectors.toList());
+
+                    List<List<String>> files = new ArrayList<>();
+
+                    for (Object file_root : files_roots) {
+                        List<String> file_data = new ArrayList<>();
+                        file_data.add(file_root.toString());
+                        file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
+                        files.add(file_data);
+                        model.addAttribute("files", files);
+                    }
+
+                    List<List<String>> users = new ArrayList<>();
+
+                    for (String[] user_data : data) {
+                        List<String> user = new ArrayList<>();
+                        user.add(user_data[0]);
+                        users.add(user);
+                        model.addAttribute("users", users);
+                    }
+                    counter = 0;
+                    return "file";
+                } else {
+                    model.addAttribute("login", "Nastala chyba");
+                    return "chyba";
+                }
+            }
+        }
+        return "redirect:/login";
     }
 
     @PostMapping({"/download"})

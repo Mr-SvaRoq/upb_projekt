@@ -21,7 +21,8 @@ public class ZadanieApplication {
         return (args) -> {
             System.out.println("UPB-zadanie");
             System.out.println("http://localhost:8080/");
-            storageService.deleteAll("files.csv");
+            //toto je aby sa Rado nedojebal lebo sa mu to bude vzdy mazat
+            //storageService.deleteAll("files.csv");
             storageService.init();
         };
     }

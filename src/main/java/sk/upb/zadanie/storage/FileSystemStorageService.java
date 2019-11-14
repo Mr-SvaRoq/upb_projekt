@@ -202,12 +202,13 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public void init() {
-        try {
-            Files.createDirectories(rootLocation);
-        }
-        catch (IOException e) {
-            throw new StorageException("Could not initialize storage", e);
-        }
+        //toto je aby sa Rado nedojebal lebo sa mu to bude vzdy mazat
+//        try {
+//            Files.createDirectories(rootLocation);
+//        }
+//        catch (IOException e) {
+//            throw new StorageException("Could not initialize storage", e);
+//        }
     }
 
     @Override
