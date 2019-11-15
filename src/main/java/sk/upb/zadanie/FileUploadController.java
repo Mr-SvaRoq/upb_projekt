@@ -287,7 +287,7 @@ public class FileUploadController {
         for (String[] row : data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
-                    model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+                    model.addAttribute("login", cookies.getCookieValue(request, "userName"));
                     List files_roots = this.storageService.loadAll().map((path) -> {
                         return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
                     }).collect(Collectors.toList());
