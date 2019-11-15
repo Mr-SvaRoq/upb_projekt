@@ -14,7 +14,7 @@
     <p th:text="'Owner:' + ${file[1]}"></p>
     <a style="text-decoration: none;font-size: larger; color: white;"
         th:text="'download: ' + ${file[0]}"
-        th:href="@{~/download/${file[0]}}">
+        th:href="@{~/download/{path}(path=${file[0]})}">
     </a>
     <p>{{ hello }}</p>
     <p>{{ file[0] }} + {{ file[1] }}</p>
@@ -22,6 +22,7 @@
 <script th:inline="javascript">
     let file = [[${file}]];
     let users = [[${users}]];
+    console.log(path);
     console.log(file, users);
 </script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>

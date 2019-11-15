@@ -67,11 +67,10 @@
         <input type="submit" value="Download app!" />
     </form>
 </div>
-
 <div>
     <ul>
         <li th:each="file : ${files}">
-            <a style="text-decoration: none; font-size: larger; color: white;" th:href="'http://localhost:8080/files/' + ${file[0]}" th:text="${file[0].substring(file[0].lastIndexOf('/') + 1)}" />
+            <a style="text-decoration: none; font-size: larger; color: white;" th:href="@{~/files/{path}(path=${file[0]})}" th:text="${file[0].substring(file[0].lastIndexOf('/') + 1)}" />
             <p style="display: inline-block; font-size: larger; color: white;" th:text="' - ' + ${file[1]}" />
         </li>
     </ul>
