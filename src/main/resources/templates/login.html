@@ -1,6 +1,5 @@
-<html xmlns:th="https://www.thymeleaf.org">
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
@@ -12,7 +11,7 @@
 <form method="post" id="form4" action="/login">
     User: <br><input type="text" name="user" required/> <br>
     Password:<br><input type="password" name="password" required/> <br>
-    <input type="submit" value="Login!" />
+    <input type="submit" value="Login!"/>
 </form>
 <div th:if="${login}">
     <h2 th:text="${login}"/>

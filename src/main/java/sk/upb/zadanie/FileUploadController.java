@@ -95,12 +95,10 @@ public class FileUploadController {
 
                     for (Object file_root : files_roots) {
                         List<String> file_data = new ArrayList<>();
-                        if (cookies.getCookieValue(request, "userName").equals(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)))) {
                             file_data.add(file_root.toString());
                             file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
                             files.add(file_data);
                             model.addAttribute("files", files);
-                        }
                     }
 
                     List<List<String>> users = new ArrayList<>();
@@ -276,11 +274,15 @@ public class FileUploadController {
     @GetMapping({"/files/{filename:.+}"})
     public String fileDetail(Model model, HttpServletRequest request, @PathVariable String filename) throws InvalidKeySpecException, NoSuchAlgorithmException {
         List<String[]> data = storageService.convertCSVToData("users.csv");
-
         String allCookies = cookies.readAllCookies(request);
         if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
         }
+        List<String> file_data = new ArrayList<>();
+        file_data.add(filename);
+        file_data.add(storageService.getFileOwner(filename));
+
+        model.addAttribute("file", file_data);
 
         for (String[] row : data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
@@ -292,13 +294,6 @@ public class FileUploadController {
 
                     List<List<String>> files = new ArrayList<>();
 
-                    for (Object file_root : files_roots) {
-                        List<String> file_data = new ArrayList<>();
-                        file_data.add(file_root.toString());
-                        file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
-                        files.add(file_data);
-                        model.addAttribute("files", files);
-                    }
 
                     List<List<String>> users = new ArrayList<>();
 
