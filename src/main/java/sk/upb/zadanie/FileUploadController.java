@@ -147,16 +147,38 @@ public class FileUploadController {
         return "redirect:/login";
     }
 
-    @PostMapping({"/files/{filename:.+}"}) //ASI, treba ma aj kontrolovat, nepocuvat ma vkuse :D
-    public String newPrivilages(@RequestParam("file") String fileName, @RequestParam("owner") String owner, @RequestParam("newPrivilages") String newPrivilages) {
+    public static boolean empty( final String s ) {
+        // Null-safe, short-circuit evaluation.
+        return s == null || s.trim().isEmpty();
+    }
 
-        //overit, ci nie su nahodou null parametre
-        //pozriet, ci owner ma fileName,
-        //pridat novy riadok do privilages
+    //TODO zmenit /files/skuska
+    @PostMapping({"/files/skuska"})
+    public String newPrivileges(Model model, HttpServletRequest request, @RequestParam("fileName") String fileName, @RequestParam("owner") String owner, @RequestParam("newPrivileges") String newFileUser) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        //overit, ci nie su nahodou null parametre alebo prazdne stringy
+        if (!empty(fileName) && !empty(owner) && !empty(newFileUser)) {
+            //pozriet, ci owner ma fileName,
+            List<String[]> data = storageService.convertCSVToData("privileges.csv");
+            for (String[] row : data) {
+                if(row[0].equals(fileName) && row[1].equals(owner) && row[2].equals(newFileUser)){
+                    //TODO FrontEnd - Aby sa tento atribut zobrazil na stranke
+                    model.addAttribute("error", "Pouzivatel: " + newFileUser + " uz ma prava k suboru: " + fileName);
+                    return "redirect:/files/" + fileName;
+                }
+            }
+            //ak sa prihlaseny user (cookies) zhoduje s ownerom fileu tak moze zapisovat prava
+            String login = cookies.getCookieValue(request, "userName");
+            String ownerOfFile = storageService.getFileOwner(fileName);
+            if (cookies.getCookieValue(request, "userName").equals(storageService.getFileOwner(fileName))) {
+                  //pridat novy riadok do privileges
+                  String[] newLine = {fileName, owner, newFileUser};
+                  data.add(newLine);
+                  this.storageService.convertDataToCSV(data, "privileges.csv");
+            }
+        }
+        //TODO redirect zatial na / mozno potom zmenit
         //return stranky, resp redirect
-
-
-        return "file";
+        return "redirect:/files/" + fileName;
     }
 
 
