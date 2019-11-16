@@ -136,7 +136,7 @@ public class FileUploadController {
                         users.add(user);
                         model.addAttribute("users", users);
                     }
-                    counter = 0;
+//                    counter = 0;
                     return "file";
                 } else {
                     model.addAttribute("login", "Nastala chyba");
@@ -145,13 +145,6 @@ public class FileUploadController {
             }
         }
         return "redirect:/login";
-    }
-
-    @PostMapping({"/download"})
-    @ResponseBody
-    public ResponseEntity<Resource> serveFile() throws java.io.FileNotFoundException {
-        Resource file = this.storageService.loadAsResource("upb_decypher.jar", false);
-        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
     }
 
     @PostMapping({"/"})
@@ -172,6 +165,7 @@ public class FileUploadController {
                 if (storageService.getUserKey(owner).equals("")) {
                     System.out.println("Nieco sa pokazilo...");
                 } else {
+                    //TODO zmenit public key na server public key
                     this.encryptionService.encryptRSA(file, this.storageService.load(filename), storageService.getUserKey(owner));
                 }
                 break;
