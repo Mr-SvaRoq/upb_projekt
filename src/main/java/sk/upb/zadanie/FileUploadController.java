@@ -147,6 +147,20 @@ public class FileUploadController {
         return "redirect:/login";
     }
 
+    @PostMapping({"/files/{filename:.+}"}) //ASI, treba ma aj kontrolovat, nepocuvat ma vkuse :D
+    public String newPrivilages(@RequestParam("file") String fileName, @RequestParam("owner") String owner, @RequestParam("newPrivilages") String newPrivilages) {
+
+        //overit, ci nie su nahodou null parametre
+        //pozriet, ci owner ma fileName,
+        //pridat novy riadok do privilages
+        //return stranky, resp redirect
+
+
+        return "file";
+    }
+
+
+
     @PostMapping({"/"})
     public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("owner") String owner, @RequestParam("action") String action, HttpServletRequest request, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         String filename = "";
