@@ -1,42 +1,144 @@
-<html xmlns:th="https://www.thymeleaf.org">
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Register</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!--  TODO: potom zmazat len kvoli autocomplete  -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <style>
+        textarea {
+            resize: none;
+        }
+    </style>
 </head>
-<body style="background: black; color: white">
+<body class="text-white" style="background-color: #222222">
+<div id="login" class="vh-100">
+    <div class="container d-flex h-100 justify-content-center">
+        <div class="card align-self-center text-center" style="background-color: #333333; max-width: 37vw; min-width: 37vw">
+            <div class="card-body">
+                <h5>Register</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <form class="form d-block" method="post" id="form4" action="/register">
+                            <div class="input-group mb-2 mt-3">
+                                <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">
+                            <i class="fa fa-user"></i>
+                        </span>
+                                </div>
+                                <input type="text"
+                                       name="user"
+                                       class="form-control"
+                                       placeholder="Username"
+                                       aria-label="Username"
+                                       aria-describedby="basic-addon1"
+                                       required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon2">
+                            <i class="fa fa-key"></i>
+                        </span>
+                                </div>
+                                <input type="password"
+                                       name="password"
+                                       class="form-control"
+                                       placeholder="Password"
+                                       aria-label="Password"
+                                       aria-describedby="basic-addon2"
+                                       required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon3">
+                            <i class="fa fa-key"></i>
+                        </span>
+                                </div>
+                                <input type="password"
+                                       name="conFirmpassword"
+                                       class="form-control"
+                                       placeholder="Confirm password"
+                                       aria-label="Password"
+                                       aria-describedby="basic-addon3"
+                                       required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                </div>
+                                <textarea rows="3" name="public_key" id="public_key" placeholder="Public key" class="form-control" aria-label="With textarea" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-block btn-secondary pull-right d-block">Sign up
+                            </button>
+                            <br><br>
+                        </form>
+                        <hr class="my-1">
+                        <a href="/login" class="align-self-center"><small>Already have an Account?<br> Sign
+                            in!</small></a>
+                        <div v-if="loginBad">
+                            <small class="text-danger">{{ loginBad }}</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <form method="post" id="form2" action="/generate_key">
+                            <input type="hidden" id="origin" name="origin" value="register">
+                            <button class="btn btn-secondary btn-block mt-3" type="submit">Generate keys</button>
+                        </form>
+                        <div v-if="publicKey">
+                            <span class="pull-left">Public key:</span>
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                </div>
+                                <textarea rows="3" placeholder="Public key" class="form-control" aria-label="With textarea">{{ publicKey.trim() }}</textarea>
+                            </div>
+                        </div>
+                        <div v-if="privateKey">
+                            <span class="pull-left">Private key:</span>
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-unlock-alt"></i></span>
+                                </div>
+                                <textarea rows="3" placeholder="Public key" class="form-control" aria-label="With textarea">{{ privateKey.trim() }}</textarea>
+                            </div>
+                        </div>
+                        <div v-if="privateKey">
+                            <form method="post" id="form3" action="/generate_file">
+                                <input type="hidden" id="public_key_download" name="public_key_download" v-model=publicKey>
+                                <input type="hidden" id="private_key_download" name="private_key_download" v-model=privateKey>
+                                <button type="submit" class="btn btn-secondary btn-block">Download keys!</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <a href="/login">Login</a>
-<a href="/register">Register</a>
-<h1>Register</h1>
-<form method="post" id="form4" action="/register">
-    User: <br><input type="text" name="user" required/> <br>
-    Password:<br><input type="password" name="password" autocomplete="off" required/> <br>
-    Confirm Password:<br><input type="password" name="conFirmpassword" autocomplete="off" required/> <br>
-    Public key:<br><textarea name="public_key" id="public_key" cols="30" rows="10" required></textarea><br><p>Delete all new-line characters from the end of entered key...</p>
-    <input type="submit" value="Register!" />
-</form>
-<div th:if="${loginBad}">
-    <h2 th:text="${loginBad}"/>
-</div>
-<form method="post" id="form2" action="/generate_key">
-    <h3>Don't have public and private key? Generate them!</h3>
-    <input type="hidden" id="origin" name="origin" value="register">
-    <input type="submit" value="Generate keys!" />
-</form>
-<div th:if="${public_key}" style="max-width: 50%">
-    <span>Public key:</span><p th:text="${public_key}" style="overflow: auto">
-</div>
-<div th:if="${private_key}" style="max-width: 50%">
-    <span>Private key:</span><p th:text="${private_key}" style="overflow: auto">
-</div>
-<div th:if="${private_key}">
-    <form method="post" id="form3" action="/generate_file">
-        <p>You can download them as .txt file as well!</p>
-        <input type="hidden" id="public_key_download" name="public_key_download" th:value="${public_key}">
-        <input type="hidden" id="private_key_download" name="private_key_download" th:value="${private_key}">
-        <input type="submit" value="Download keys!" />
-    </form>
-</div>
+
+<script src="https://use.fontawesome.com/144775f3f4.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script th:inline="javascript">
+    new Vue({
+        el: '#login',
+        data: {
+            loginBad: [[${loginBad}]],
+            privateKey: [[${private_key}]],
+            publicKey: [[${public_key}]],
+        }
+    })
+</script>
 </body>
 </html>
