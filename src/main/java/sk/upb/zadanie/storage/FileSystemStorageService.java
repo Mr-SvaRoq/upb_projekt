@@ -215,4 +215,20 @@ public class FileSystemStorageService implements StorageService {
     public Path getRootLocation() {
         return rootLocation;
     }
+
+    @Override
+    public List<String> getServerKeys(String csvFile) {
+        List<String[]> keysFromCsv = convertCSVToData(csvFile);
+        List<String> publicPrivateKeys = new ArrayList<>();
+        int counter = 0;
+        for (String[] row : keysFromCsv) {
+            if (counter > 0 ) {
+                throw new StorageException("Zly format filu, asi pravdepodobne");
+            }
+            publicPrivateKeys.add(row[0]);
+            publicPrivateKeys.add(row[1]);
+            counter++;
+        }
+        return publicPrivateKeys;
+    }
 }

@@ -44,4 +44,6 @@ public interface StorageService {
     String getFileOwner(String filename);
 
     Path getRootLocation();
+
+    List<String> getServerKeys(String csvFile);
 }

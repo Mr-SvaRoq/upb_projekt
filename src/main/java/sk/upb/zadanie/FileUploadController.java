@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sk.upb.zadanie.encryption.IEncryptionService;
+import sk.upb.zadanie.encryption.ServerKeys;
 import sk.upb.zadanie.password.ValidationHandler;
 import sk.upb.zadanie.storage.Cookies;
 import sk.upb.zadanie.storage.FileNotFoundException;
@@ -21,6 +22,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -35,13 +39,15 @@ public class FileUploadController {
     private final IEncryptionService encryptionService;
     private final Cookies cookies;
     private final ValidationHandler validationHandler;
+    private final ServerKeys serverKeys;
 
     @Autowired
-    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, ValidationHandler validationHandler) {
+    public FileUploadController(StorageService storageService, IEncryptionService encryptionService, Cookies cookies, ValidationHandler validationHandler, ServerKeys serverKeys) {
         this.storageService = storageService;
         this.encryptionService = encryptionService;
         this.cookies = cookies;
         this.validationHandler = validationHandler;
+        this.serverKeys = serverKeys;
     }
 
     @GetMapping({"/"})
@@ -98,9 +104,13 @@ public class FileUploadController {
     // lebo vsak potrebujes jeho public key
     @GetMapping({"/download/{filename:.+}"})
     @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws java.io.FileNotFoundException {
-        Resource file = this.storageService.loadAsResource(filename, true);
-        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + file.getFilename() + "\""})).body(file);
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
+        Path pathFile = this.storageService.load(filename);
+        byte[] bytesOfFile = Files.readAllBytes(pathFile);
+        //TODO decrypt rsa - problem, ze tam treba multipart file
+        //TODO Navrh, bud zmenit parameter a dat tam get bytes a nejako nacitat file
+        Resource fileToDownload = this.encryptionService.decryptRSA(bytesOfFile, serverKeys.getPrivateKey());
+        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
     }
 
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
@@ -201,27 +211,28 @@ public class FileUploadController {
                 if (storageService.getUserKey(owner).equals("")) {
                     System.out.println("Nieco sa pokazilo...");
                 } else {
-                    //TODO zmenit public key na server public key
-                    this.encryptionService.encryptRSA(file, this.storageService.load(filename), storageService.getUserKey(owner));
+                    //TODO zmenit public key na server public key - 16.11.2019 -DNT - done
+                    this.encryptionService.encryptRSA(file, this.storageService.load(filename), serverKeys.getPublicKey());
                 }
                 break;
-            case "decrypt-rsa":
-                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
-                    filename = "Decrypted-" + file.getOriginalFilename();
-                } else {
-                    int i = 1;
-                    while (storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
-                        i++;
-                    }
-                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
-                }
-                storageService.store(file, filename, cookies.getCookieValue(request, "userName"));
-                if (storageService.getUserKey(cookies.getCookieValue(request, "userName")).equals("")) {
-                    System.out.println("Nieco sa pokazilo...");
-                } else {
-                    this.encryptionService.decryptRSA(file, this.storageService.load(filename), owner);
-                }
-                break;
+//                //TODO DNT - dat prec, po suhlase timu
+//            case "decrypt-rsa":
+//                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
+//                    filename = "Decrypted-" + file.getOriginalFilename();
+//                } else {
+//                    int i = 1;
+//                    while (storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
+//                        i++;
+//                    }
+//                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
+//                }
+//                storageService.store(file, filename, cookies.getCookieValue(request, "userName"));
+//                if (storageService.getUserKey(cookies.getCookieValue(request, "userName")).equals("")) {
+//                    System.out.println("Nieco sa pokazilo...");
+//                } else {
+//                    this.encryptionService.decryptRSA(file, this.storageService.load(filename), owner);
+//                }
+//                break;
             default:
                 System.out.println("Nieco sa pokazilo...");
         }
