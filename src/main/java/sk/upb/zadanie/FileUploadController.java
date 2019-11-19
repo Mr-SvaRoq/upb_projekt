@@ -113,6 +113,18 @@ public class FileUploadController {
         return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
     }
 
+    @GetMapping({"/download/crypted/{filename:.+}"})
+    @ResponseBody
+    public ResponseEntity<Resource> serveCryptedFile(@PathVariable String filename, HttpServletRequest request) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
+        Path pathFile = this.storageService.load(filename);
+        byte[] bytesOfFile = Files.readAllBytes(pathFile);
+        Resource fileToDownload = null;
+        if (!cookies.getCookieValue(request, "userName").equals("")) {
+            String publicKey  = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
+            fileToDownload = this.encryptionService.reDecryptRSAWithUsersPublicKey(bytesOfFile, publicKey, serverKeys.getPrivateKey());
+        }
+        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
+    }
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
     @GetMapping({"/files/{filename:.+}"})
     public String fileDetail(Model model, HttpServletRequest request, @PathVariable String filename) throws InvalidKeySpecException, NoSuchAlgorithmException {

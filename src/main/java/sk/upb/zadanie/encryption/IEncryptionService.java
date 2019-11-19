@@ -32,5 +32,7 @@ public interface IEncryptionService {
 
     Resource decryptRSA(byte[] file, String privateKey) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException, IOException;
 
+    Resource reDecryptRSAWithUsersPublicKey(byte[] file, String userPublicKey, String serverPrivateKey) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException, IOException;
+
     PublicKey checkPublicKey(byte[] publicKey);
 }

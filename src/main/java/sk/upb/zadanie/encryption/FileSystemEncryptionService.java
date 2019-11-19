@@ -75,7 +75,7 @@ public class FileSystemEncryptionService implements IEncryptionService {
 
         this.cipher = cipherHandler.doEncrypt(iv, secretKey, publicKey, plainText); //TODO iv sa nebude pouzivat, secret key bude danielka teraz robit, mac mozno pojde prec, lebo GCM pojde ma integritu
         this.writeToFileByte(this.cipher, filePath);
-        return rsaHandler.encryptText(secretKey.getEncoded(), publicKey); //TODO THIS sifrovanie kluca
+        return rsaHandler.encryptText(secretKey.getEncoded(), publicKey); //TODO THIS sifrovanie kluca, co je toto
     }
 
     @Override
@@ -99,6 +99,19 @@ public class FileSystemEncryptionService implements IEncryptionService {
         PrivateKey newPrivateKey = rsaHandler.getPrivate(Base64.getDecoder().decode(privateKey));
         byte[] plain = cipherHandler.decrypt(file, newPrivateKey); //TODO THIS
         return new ByteArrayResource(plain);
+    }
+
+    @Override
+    public Resource reDecryptRSAWithUsersPublicKey(byte[] file, String userPublicKey, String serverPrivateKey) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException, IOException {
+        PrivateKey newPrivateKey = rsaHandler.getPrivate(Base64.getDecoder().decode(serverPrivateKey));
+        byte[] plain = cipherHandler.decrypt(file, newPrivateKey);
+
+        this.iv = this.cipherHandler.generateInitialVector();
+        PublicKey publicKey = rsaHandler.getPublic(Base64.getDecoder().decode(userPublicKey));
+
+        this.cipher = cipherHandler.doEncrypt(iv, secretKey, publicKey, plain);
+//        return new ByteArrayResource(rsaHandler.encryptText(secretKey.getEncoded(), publicKey)); //TODO wtf is this
+        return new ByteArrayResource(this.cipher);
     }
 
     @Override
