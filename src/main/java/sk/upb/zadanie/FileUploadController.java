@@ -162,7 +162,22 @@ public class FileUploadController {
         return s == null || s.trim().isEmpty();
     }
 
-    //TODO zmenit /files/skuska
+    //Zapisovanie komentarov do DB
+    @PostMapping({"/files/comment"})
+    public String newComment(Model model, HttpServletRequest request, @RequestParam("fileName") String fileName, @RequestParam("newComment") String newComment) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        if (!empty(fileName) && !empty(newComment) && storageService.checkIfFileExist(fileName)) {
+
+            List<String[]> comments = storageService.convertCSVToData("comments.csv");
+
+            String[] newLine = {Integer.toString(comments.size()), cookies.getCookieValue(request, "userName"), fileName, newComment} ;
+            comments.add(newLine);
+            storageService.convertDataToCSV(comments, "comments.csv");
+        }
+
+        return "redirect:/files/" + fileName;
+    }
+
+        //TODO zmenit /files/skuska
     @PostMapping({"/files/skuska"})
     public String newPrivileges(Model model, HttpServletRequest request, @RequestParam("fileName") String fileName, @RequestParam("owner") String owner, @RequestParam("newPrivileges") String newFileUser) throws InvalidKeySpecException, NoSuchAlgorithmException {
         //overit, ci nie su nahodou null parametre alebo prazdne stringy

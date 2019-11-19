@@ -50,6 +50,15 @@
                     </div>
                     <button class="btn btn-dark pull-right" type="submit" @click="addComment(login)">Submit</button>
                 </form>
+
+<!--                Rado toto je moja inplementacia komentarov, podla nej prosim urob tu svoju - backend pocita s takymto formatom-->
+                <form method="post" id="form6" action="/files/comment">
+                    <input type="text" name="newComment" value="" />
+<!--                    Tu akoze bude nejako cez JS pridany nazov suboru -->
+                    <input type="hidden" name="fileName" value="keys.txt" />
+                    <input type="submit" value="Comment" />
+                </form>
+
                 <form method="post" id="form5" action="/files/skuska">
                     <input type="text" name="owner" value= "" />
                     <input type="text" name="fileName" value= ""  />
