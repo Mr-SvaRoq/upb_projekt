@@ -40,7 +40,7 @@
                 <!--            download: {{ file[0] }}-->
                 <!--        </a>-->
                 <div class="d-block text-center">
-                    <a style="background-color: #333333; color: white" class="btn mr-2" role="button" th:href="@{~/download/{path}(path=${file[0]})}">Encrypted</a>
+                    <a style="background-color: #333333; color: white" class="btn mr-2" role="button" th:href="@{~/download/crypted/{path}(path=${file[0]})}">Encrypted</a>
                     <a style="color: black" class="btn bg-white" role="button" th:href="@{~/download/{path}(path=${file[0]})}">Decrypted</a>
                 </div>
                 <form v-on:submit.prevent>
