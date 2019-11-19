@@ -116,7 +116,7 @@ public class FileUploadController {
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
     @GetMapping({"/files/{filename:.+}"})
     public String fileDetail(Model model, HttpServletRequest request, @PathVariable String filename) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        List<String[]> data = storageService.convertCSVToData("users.csv");
+        List<String[]> users_data = storageService.convertCSVToData("users.csv");
         String allCookies = cookies.readAllCookies(request);
         if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
@@ -127,7 +127,7 @@ public class FileUploadController {
 
         model.addAttribute("file", file_data);
 
-        for (String[] row : data) {
+        for (String[] row : users_data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
                     model.addAttribute("login", cookies.getCookieValue(request, "userName"));
@@ -135,17 +135,30 @@ public class FileUploadController {
                         return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
                     }).collect(Collectors.toList());
 
-                    List<List<String>> files = new ArrayList<>();
+                    List<List<String>> comments = new ArrayList<>();
+                    List<String[]> data_comments = storageService.convertCSVToData("comments.csv");
+
+                    for (String[] comment_data : data_comments) {
+                        if (comment_data[2].equals(filename)) {
+                            List<String> comment = new ArrayList<>();
+                            comment.add(comment_data[1]);
+                            comment.add(comment_data[3]);
+                            comments.add(comment);
+                        }
+
+                    }
+                    model.addAttribute("comments", comments);
 
 
                     List<List<String>> users = new ArrayList<>();
 
-                    for (String[] user_data : data) {
+                    for (String[] user_data : users_data) {
                         List<String> user = new ArrayList<>();
                         user.add(user_data[0]);
                         users.add(user);
-                        model.addAttribute("users", users);
                     }
+                    model.addAttribute("users", users);
+
 //                    counter = 0;
                     return "file";
                 } else {
