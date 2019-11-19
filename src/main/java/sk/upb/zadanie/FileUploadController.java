@@ -123,7 +123,7 @@ public class FileUploadController {
             String publicKey  = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
             fileToDownload = this.encryptionService.reDecryptRSAWithUsersPublicKey(bytesOfFile, publicKey, serverKeys.getPrivateKey());
         }
-        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
+        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
     }
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
     @GetMapping({"/files/{filename:.+}"})
