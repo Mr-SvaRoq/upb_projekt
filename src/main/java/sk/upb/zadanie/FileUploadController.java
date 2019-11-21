@@ -125,6 +125,7 @@ public class FileUploadController {
         }
         return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
     }
+
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
     @GetMapping({"/files/{filename:.+}"})
     public String fileDetail(Model model, HttpServletRequest request, @PathVariable String filename) throws InvalidKeySpecException, NoSuchAlgorithmException {
