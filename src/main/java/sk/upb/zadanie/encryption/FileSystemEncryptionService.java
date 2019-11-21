@@ -12,6 +12,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,7 +75,7 @@ public class FileSystemEncryptionService implements IEncryptionService {
 
         this.cipher = cipherHandler.doEncrypt(iv, secretKey, publicKey, plainText); //TODO iv sa nebude pouzivat, secret key bude danielka teraz robit, mac mozno pojde prec, lebo GCM pojde ma integritu
         this.writeToFileByte(this.cipher, filePath);
-        return rsaHandler.encryptText(secretKey.getEncoded(), publicKey); //TODO THIS sifrovanie kluca
+        return rsaHandler.encryptText(secretKey.getEncoded(), publicKey); //TODO THIS sifrovanie kluca, co je toto
     }
 
     @Override
@@ -83,13 +85,33 @@ public class FileSystemEncryptionService implements IEncryptionService {
         return new SecretKeySpec(decrypted, 0, decrypted.length, "AES"); //TODO THIS - desifrovanie
     }
 
+//    @Override
+//    public void decryptRSA(MultipartFile file, Path filePath, String privateKey) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException {
+//        byte[] plainText = file.getBytes();
+//        PrivateKey newPrivateKey = rsaHandler.getPrivate(Base64.getDecoder().decode(privateKey));
+//        byte[] plain = cipherHandler.decrypt(plainText, newPrivateKey); //TODO THIS
+//        String decipheredText = new String(plain);
+//        this.writeToFile(decipheredText, filePath);
+//    }
+
     @Override
-    public void decryptRSA(MultipartFile file, Path filePath, String privateKey) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException {
-        byte[] plainText = file.getBytes();
+    public Resource decryptRSA(byte[] file, String privateKey) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException, IOException {
         PrivateKey newPrivateKey = rsaHandler.getPrivate(Base64.getDecoder().decode(privateKey));
-        byte[] plain = cipherHandler.decrypt(plainText, newPrivateKey); //TODO THIS
-        String decipheredText = new String(plain);
-        this.writeToFile(decipheredText, filePath);
+        byte[] plain = cipherHandler.decrypt(file, newPrivateKey); //TODO THIS
+        return new ByteArrayResource(plain);
+    }
+
+    @Override
+    public Resource reDecryptRSAWithUsersPublicKey(byte[] file, String userPublicKey, String serverPrivateKey) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException, IOException {
+        PrivateKey newPrivateKey = rsaHandler.getPrivate(Base64.getDecoder().decode(serverPrivateKey));
+        byte[] plain = cipherHandler.decrypt(file, newPrivateKey);
+
+        this.iv = this.cipherHandler.generateInitialVector();
+        PublicKey publicKey = rsaHandler.getPublic(Base64.getDecoder().decode(userPublicKey));
+
+        this.cipher = cipherHandler.doEncrypt(iv, secretKey, publicKey, plain);
+//        return new ByteArrayResource(rsaHandler.encryptText(secretKey.getEncoded(), publicKey)); //TODO wtf is this
+        return new ByteArrayResource(this.cipher);
     }
 
     @Override

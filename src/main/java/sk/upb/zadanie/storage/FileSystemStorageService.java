@@ -202,16 +202,33 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public void init() {
-        try {
-            Files.createDirectories(rootLocation);
-        }
-        catch (IOException e) {
-            throw new StorageException("Could not initialize storage", e);
-        }
+        //toto je aby sa Rado nedojebal lebo sa mu to bude vzdy mazat
+//        try {
+//            Files.createDirectories(rootLocation);
+//        }
+//        catch (IOException e) {
+//            throw new StorageException("Could not initialize storage", e);
+//        }
     }
 
     @Override
     public Path getRootLocation() {
         return rootLocation;
+    }
+
+    @Override
+    public List<String> getServerKeys(String csvFile) {
+        List<String[]> keysFromCsv = convertCSVToData(csvFile);
+        List<String> publicPrivateKeys = new ArrayList<>();
+        int counter = 0;
+        for (String[] row : keysFromCsv) {
+            if (counter > 0 ) {
+                throw new StorageException("Zly format filu, asi pravdepodobne");
+            }
+            publicPrivateKeys.add(row[0]);
+            publicPrivateKeys.add(row[1]);
+            counter++;
+        }
+        return publicPrivateKeys;
     }
 }

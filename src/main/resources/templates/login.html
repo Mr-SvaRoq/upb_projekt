@@ -1,21 +1,78 @@
-<html xmlns:th="https://www.thymeleaf.org">
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!--  TODO: potom zmazat len kvoli autocomplete  -->
+    <link rel="stylesheet" href="css/bootstrap.css">
 </head>
-<a href="/login">Login</a>
-<a href="/register">Register</a>
-<h1>Login</h1>
-<body style="background: black; color: white">
-<form method="post" id="form4" action="/login">
-    User: <br><input type="text" name="user" required/> <br>
-    Password:<br><input type="password" name="password" required/> <br>
-    <input type="submit" value="Login!" />
-</form>
-<div th:if="${login}">
-    <h2 th:text="${login}"/>
+<body class="text-white" style="background-color: #222222">
+<div id="login" class="vh-100">
+    <div class="container d-flex h-100 justify-content-center">
+        <div class="card align-self-center text-center" style="background-color: #333333; max-width: 30vw">
+            <div class="card-body">
+                <h5>Login</h5>
+                <form class="form d-block" method="post" id="form4" action="/login">
+                    <div class="input-group mb-2 mt-3">
+                        <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">
+                            <i class="fa fa-user"></i>
+                        </span>
+                        </div>
+                        <input type="text"
+                               name="user"
+                               class="form-control"
+                               placeholder="Username"
+                               aria-label="Username"
+                               aria-describedby="basic-addon1"
+                               required>
+                    </div>
+                    <div class="input-group mb-2">
+                        <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon2">
+                            <i class="fa fa-key"></i>
+                        </span>
+                        </div>
+                        <input type="password"
+                               name="password"
+                               class="form-control"
+                               placeholder="Password"
+                               aria-label="Password"
+                               aria-describedby="basic-addon2"
+                               required>
+                    </div>
+                        <button type="submit" class="btn btn-block btn-secondary pull-right d-block">Sign in</button>
+                    <br><br>
+                </form>
+                <hr class="my-1">
+                <a href="/register" class="align-self-center"><small>Dont have an Account?<br> Sign up!</small></a>
+                <div v-if="login">
+                    <small class="text-danger">User not found</small>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<script src="https://use.fontawesome.com/144775f3f4.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script th:inline="javascript">
+    new Vue({
+        el: '#login',
+        data: {
+            login: [[${login}]],
+        }
+    })
+</script>
 </body>
 </html>

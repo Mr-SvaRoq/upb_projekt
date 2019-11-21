@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!--  TODO: potom zmazat len kvoli autocomplete  -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <style>
+        textarea{
+            resize: none;
+        }
+    </style>
+</head>
+<body class="text-white" style="background-color: #222222">
+<div id="file">
+    <nav style="background-color: #333333" class="navbar navbar-expand navbar-dark">
+        <div class="collapse navbar-collapse" id="navbarsExample02">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{~/}"><i class="fa fa-arrow-left"></i></a>
+                </li>
+            </ul>
+            <span class="ml-auto">
+                <span><i class="fa fa-user mr-2"></i>{{ login }}</span>
+            </span>
+        </div>
+    </nav>
+    <div class="container pt-3">
+        <div class="row">
+            <div class="col-6">
+                <h6>Owner: {{ file[1] }} </h6>
+                <h3>{{ file[0] }}</h3>
+                <div class="d-block text-center my-3">
+                    <i style="font-size: 10rem" class="fa fa-paper-plane"></i>
+                </div>
+                <!--        <a style="text-decoration: none;font-size: larger; color: white;"-->
+                <!--           th:href="@{~/download/{path}(path=${file[0]})}">-->
+                <!--            download: {{ file[0] }}-->
+                <!--        </a>-->
+                <div class="d-block text-center">
+                    <a style="background-color: #333333; color: white" class="btn mr-2" role="button" th:href="@{~/download/crypted/{path}(path=${file[0]})}">Encrypted</a>
+                    <a style="color: black" class="btn bg-white" role="button" th:href="@{~/download/{path}(path=${file[0]})}">Decrypted</a>
+                </div>
+                <form v-on:submit.prevent>
+                    <div class="form-group my-2">
+                        <label for="comment">Comment:</label>
+                        <textarea v-model="comment" class="form-control" id="comment" rows="3"></textarea>
+                    </div>
+                    <button class="btn btn-dark pull-right" type="submit" @click="addComment(login)">Submit</button>
+                </form>
+
+<!--                Rado toto je moja inplementacia komentarov, podla nej prosim urob tu svoju - backend pocita s takymto formatom-->
+                <form method="post" id="form6" action="/files/comment">
+                    <input type="text" name="newComment" value="" />
+<!--                    Tu akoze bude nejako cez JS pridany nazov suboru -->
+                    <input type="hidden" name="fileName" value="keys.txt" />
+                    <input type="submit" value="Comment" />
+                </form>
+
+                <form method="post" id="form5" action="/files/skuska">
+                    <input type="text" name="owner" value= "" />
+                    <input type="text" name="fileName" value= ""  />
+                    <input type="text" name="newPrivileges" value= "Sebo@123456789" />
+                    <input type="submit" value="Choose" />
+                </form>
+                <br>
+            </div>
+            <div class="col-6">
+                <div class="row">
+                    <div class="col-12">
+                        <p>Comments</p>
+                    </div>
+                </div>
+                <div v-for="comment in comments" class="row border border-dark rounded mb-2">
+                    <div class="col-3 text-center border-right border-dark py-1" style="word-break: break-all">
+                        <i style="font-size: 1.5rem" class="fa fa-user"></i>
+                        <br>
+                        <span>{{ comment[0] }}</span>
+                    </div>
+                    <div class="col-9 my-auto">{{ comment[1] }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://use.fontawesome.com/144775f3f4.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script th:inline="javascript">
+    new Vue({
+        el: '#file',
+        data: {
+            comments: [ ["Erik", "Ahoj"], ["Daniela", "Ahoj"], ["Dinh", "Skap"] ],
+            file: [[${file}]],
+            login: [[${login}]],
+            users: [[${users}]],
+            comment: ''
+        },
+        methods: {
+            addComment(userName) {
+                if(this.comment.length > 0) {
+                    this.comments.push([userName, this.comment]);
+                    this.comment = '';
+                }
+            }
+        }
+    })
+</script>
+</body>
+</html>
