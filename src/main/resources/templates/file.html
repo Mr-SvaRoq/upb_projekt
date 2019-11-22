@@ -8,58 +8,62 @@
     <!--  TODO: potom zmazat len kvoli autocomplete  -->
     <link rel="stylesheet" href="css/bootstrap.css">
     <style>
-        textarea{
+        textarea {
             resize: none;
         }
     </style>
 </head>
 <body class="text-white" style="background-color: #222222">
 <div id="file">
-    <nav style="background-color: #333333" class="navbar navbar-expand navbar-dark">
+    <nav class="navbar navbar-expand navbar-dark bg-dark">
         <div class="collapse navbar-collapse" id="navbarsExample02">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{~/}"><i class="fa fa-arrow-left"></i></a>
                 </li>
             </ul>
-            <span class="ml-auto">
+            <span class="ml-auto mr-2">
                 <span><i class="fa fa-user mr-2"></i>{{ login }}</span>
             </span>
+            <form method="post" id="form5" action="/logOut">
+                <button class="btn btn-outline-light" type="submit">
+                    <i class="fa fa-sign-out" aria-hidden="true"></i>
+                </button>
+            </form>
         </div>
     </nav>
     <div class="container pt-3">
         <div class="row">
             <div class="col-6">
                 <h6>Owner: {{ file[1] }} </h6>
-                <h3>{{ file[0] }}</h3>
+                <h4>{{ file[0] }}</h4>
                 <div class="d-block text-center my-3">
                     <i style="font-size: 10rem" class="fa fa-paper-plane"></i>
                 </div>
-                <!--        <a style="text-decoration: none;font-size: larger; color: white;"-->
-                <!--           th:href="@{~/download/{path}(path=${file[0]})}">-->
-                <!--            download: {{ file[0] }}-->
-                <!--        </a>-->
                 <div class="d-block text-center">
-                    <a style="background-color: #333333; color: white" class="btn mr-2" role="button" th:href="@{~/download/crypted/{path}(path=${file[0]})}">Encrypted</a>
-                    <a style="color: black" class="btn bg-white" role="button" th:href="@{~/download/{path}(path=${file[0]})}">Decrypted</a>
+                    <a class="btn btn-dark mr-2" role="button"
+                       th:href="@{~/download/crypted/{path}(path=${file[0]})}">Encrypted</a>
+                    <a class="btn btn-light" role="button"
+                       th:href="@{~/download/{path}(path=${file[0]})}">Decrypted</a>
                 </div>
-                <form v-on:submit.prevent>
+                <form method="post" id="form6" action="/files/comment">
                     <div class="form-group my-2">
-                        <label for="comment">Comment:</label>
-                        <textarea v-model="comment" class="form-control" id="comment" rows="3"></textarea>
+                        <textarea name="newComment" class="form-control" placeholder="Comment" rows="3"></textarea>
                     </div>
+                    <input type="hidden" name="fileName" v-model="file[0]" />
+                    <input type="submit" value="Choose" />
                     <button class="btn btn-dark pull-right" type="submit" @click="addComment(login)">Submit</button>
                 </form>
 
 <!--                Rado toto je moja inplementacia komentarov, podla nej prosim urob tu svoju - backend pocita s takymto formatom-->
-                <form method="post" id="form6" action="/files/comment">
+                <form method="post" id="form20" action="/files/comment">
                     <input type="text" name="newComment" value="" />
 <!--                    Tu akoze bude nejako cez JS pridany nazov suboru -->
                     <input type="hidden" name="fileName" value="keys.txt" />
                     <input type="submit" value="Comment" />
                 </form>
 
-                <form method="post" id="form5" action="/files/skuska">
+                <form method="post" id="form7" action="/files/skuska">
                     <input type="text" name="owner" value= "" />
                     <input type="text" name="fileName" value= ""  />
                     <input type="text" name="newPrivileges" value= "Sebo@123456789" />
@@ -108,7 +112,7 @@
         },
         methods: {
             addComment(userName) {
-                if(this.comment.length > 0) {
+                if (this.comment.length > 0) {
                     this.comments.push([userName, this.comment]);
                     this.comment = '';
                 }
