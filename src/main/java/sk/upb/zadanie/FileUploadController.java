@@ -91,7 +91,6 @@ public class FileUploadController {
 
                     model.addAttribute("files", files);
 
-
                     List<List<String>> users = new ArrayList<>();
 
                     for (String[] user_data : data) {
@@ -100,15 +99,6 @@ public class FileUploadController {
                         users.add(user);
                         model.addAttribute("users", users);
                     }
-
-//                    List<List<String>> fileNameComments = new ArrayList<>();
-//                    for (String[] commentData : comments) {
-//                        List<String> comment = new ArrayList<>();
-//                        comment.add(commentData[2]);
-//                        comment.add(commentData[3]);
-//                        fileNameComments.add(comment);
-//                    }
-//                    model.addAttribute("fileNameComments", fileNameComments);
 
                     List<List<String>> nameOwnerSubOwner = new ArrayList<>();
                     for (String[] privilage : privilages) {
