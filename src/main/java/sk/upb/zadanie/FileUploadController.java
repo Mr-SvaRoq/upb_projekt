@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import sk.upb.zadanie.DTO.FileObject;
 import sk.upb.zadanie.encryption.IEncryptionService;
 import sk.upb.zadanie.encryption.ServerKeys;
 import sk.upb.zadanie.password.ValidationHandler;
@@ -24,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -73,20 +73,25 @@ public class FileUploadController {
 //                    }).collect(Collectors.toList());
 
                     List files_roots = this.storageService.loadAll().collect(Collectors.toList());
-                    List<List<String>> files = new ArrayList<>();
+                    List<FileObject> files = new ArrayList<>();
 
                     for (Object file_root : files_roots) {
-                        List<String> file_data = new ArrayList<>();
-                        file_data.add(file_root.toString());
-                        file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
+                        List<FileObject> file_data = new ArrayList<>();
+                        List<String> fileComments = new ArrayList<>();
+                        FileObject fileObject = new FileObject();
+                        fileObject.setFileOwner(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
+                        fileObject.setFileName(file_root.toString());
+//                        file_data.add(file_root.toString());
+//                        file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
 
                         for (String[] commentData : comments) {
                             if (commentData[2].equals(file_root.toString())) {
-                                file_data.add(commentData[3]);
+                                fileComments.add(commentData[3]);
                             }
                         }
+                        fileObject.setComments(fileComments);
 
-                        files.add(file_data);
+                        files.add(fileObject);
                     }
 
                     model.addAttribute("files", files);

@@ -101,6 +101,8 @@
         <br>
 
     </div>
+
+    <button @click="foo()">CLICK ME</button>
 </div>
 <script src="https://use.fontawesome.com/144775f3f4.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
@@ -141,7 +143,8 @@
         },
         computed: {
             filteredFiles() {
-                return this.files ? this.files.filter(file => file[0].includes(this.search)) : []
+                // return this.files ? this.files.filter(file => file[0].includes(this.search)) : []
+                return  []
             }
         },
         methods: {
@@ -150,6 +153,12 @@
             },
             toFile(fileName) {
                 window.location.href = 'files/' + fileName;
+            },
+            foo() {
+                console.log('files');
+                console.log(this.files);
+                console.log(this.files[0].fileName);
+                console.log(this.files[0].fileOwner);
             }
         }
     })
