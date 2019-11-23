@@ -3,6 +3,7 @@ package sk.upb.zadanie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.stereotype.Controller;
@@ -140,7 +141,8 @@ public class FileUploadController {
         } else {
             String errorMessage = "Nemate pravo na tento subor.";
             Resource resource = new ByteArrayResource(errorMessage.getBytes());
-            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(resource);
+//            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(resource);
+            return ResponseEntity.noContent().build();
         }
     }
 
@@ -160,7 +162,8 @@ public class FileUploadController {
         } else {
             String errorMessage = "Nemate pravo na tento subor.";
             Resource resource = new ByteArrayResource(errorMessage.getBytes());
-            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(resource);
+//            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(resource);
+            return ResponseEntity.noContent().build();
         }
     }
 
