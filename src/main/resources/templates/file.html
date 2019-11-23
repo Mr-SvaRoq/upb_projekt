@@ -53,16 +53,6 @@
                     <input type="hidden" name="fileName" v-model="file[0]" />
                     <button class="btn btn-dark pull-right" type="submit">Submit</button>
                 </form>
-                <form method="post" id="form7" action="/files/skuska">
-                    <div style="color: red"> TODO IMPLEMENTACIA privilegia</div>
-<!--                    <input type="text" name="fileName" value="skuska"/>-->
-<!--                    <input type="text" name="owner" value="wtf"/>-->
-                    <input type="text" name="fileName" :value="file[0]"/>
-                    <input type="text" name="owner" :value="file[1]"/>
-                    <input type="text" name="newPrivileges" value= "Sebo@123456789" />
-                    <input type="submit" value="Choose" />
-                </form>
-                <br>
             </div>
             <div class="col-6">
                 <div class="row">
@@ -73,6 +63,16 @@
                 <div v-for="comment in comments" class="row border border-dark rounded mb-2">
                     <div class="col-3 text-center border-right border-dark py-1" style="word-break: break-all">
                         <i style="font-size: 1.5rem" class="fa fa-user"></i>
+                        <i v-if="!comment[0].includes(login) && login === file[1]"
+                           class="fa fa-plus text-success"
+                           style="cursor: pointer"
+                           @click="addPrivilege(comment[0])">
+                        </i>
+                        <!--           TODO: if user have privilege            -->
+                        <i v-if="false"
+                           style="font-size: 1.5rem"
+                           class="fa fa-check text-success">
+                        </i>
                         <br>
                         <span>{{ comment[0] }}</span>
                     </div>
@@ -102,6 +102,30 @@
             login: [[${login}]],
             users: [[${users}]],
             comment: ''
+        },
+        methods: {
+            addPrivilege(userName) {
+                let form = document.createElement("form");
+                let element1 = document.createElement("input");
+                let element2 = document.createElement("input");
+                let element3 = document.createElement("input");
+
+                form.method = 'post';
+                form.action = '/files/skuska';
+                element1.value = this.file[0];
+                element1.name = 'fileName';
+                element2.value = this.file[1];
+                element2.name = 'owner';
+                element3.value = userName;
+                element3.name = 'newPrivileges';
+
+                form.appendChild(element1);
+                form.appendChild(element2);
+                form.appendChild(element3);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
         }
     })
 </script>
