@@ -55,8 +55,10 @@
                 </form>
                 <form method="post" id="form7" action="/files/skuska">
                     <div style="color: red"> TODO IMPLEMENTACIA privilegia</div>
-                    <input type="text" name="owner" th:value="${file[1]}" disabled/>
-                    <input type="text" name="fileName" th:value="${file[0]}" disabled/>
+<!--                    <input type="text" name="fileName" value="skuska"/>-->
+<!--                    <input type="text" name="owner" value="wtf"/>-->
+                    <input type="text" name="fileName" :value="file[0]"/>
+                    <input type="text" name="owner" :value="file[1]"/>
                     <input type="text" name="newPrivileges" value= "Sebo@123456789" />
                     <input type="submit" value="Choose" />
                 </form>

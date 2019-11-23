@@ -53,6 +53,8 @@ public class FileUploadController {
     @GetMapping({"/"})
     public String listUploadedFiles(Model model, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
         List<String[]> data = storageService.convertCSVToData("users.csv");
+        List<String[]> comments = storageService.convertCSVToData("comments.csv");
+        List<String[]> privilages = storageService.convertCSVToData("privileges.csv");
 
         String allCookies = cookies.readAllCookies(request);
         if (!allCookies.contains("userName=") || !allCookies.contains("userPassword=")) {
@@ -89,6 +91,28 @@ public class FileUploadController {
                         users.add(user);
                         model.addAttribute("users", users);
                     }
+
+                    List<List<String>> fileNameComments = new ArrayList<>();
+                    for (String[] commentData : comments) {
+                        List<String> comment = new ArrayList<>();
+                        comment.add(commentData[2]);
+                        comment.add(commentData[3]);
+                        fileNameComments.add(comment);
+                    }
+
+                    model.addAttribute("fileNameComments", fileNameComments);
+
+                    List<List<String>> nameOwnerSubOwner = new ArrayList<>();
+                    for (String[] privilage : privilages) {
+                        List<String> prv = new ArrayList<>();
+                        prv.add(privilage[0]);
+                        prv.add(privilage[1]);
+                        prv.add(privilage[2]);
+                        nameOwnerSubOwner.add(prv);
+                    }
+
+                    model.addAttribute("nameOwnerSubOwner", nameOwnerSubOwner);
+
                     return "uploadForm";
                 } else {
                     model.addAttribute("login", "Nastala chyba");
@@ -96,6 +120,7 @@ public class FileUploadController {
                 }
             }
         }
+
         return "redirect:/login";
     }
 
