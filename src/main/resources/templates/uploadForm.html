@@ -23,9 +23,9 @@
         </div>
     </nav>
     <div class="container">
-        <div th:if="${message}">
-            <h2 th:text="${message}"></h2>
-        </div>
+        <!--        <div th:if="${message}">-->
+        <!--            <h4 th:text="${message}"></h4>-->
+        <!--        </div>-->
         <div class="row mt-3">
             <div class="mx-auto w-50">
                 <div v-if="!upload" class="input-group mb-3">
@@ -46,69 +46,42 @@
             <div class="col-12">
                 <table class="table table-dark table-striped table-hover">
                     <tbody>
-                        <tr v-for="file in filteredFiles" @click="toFile(file[0])" style="cursor: pointer" >
-                            <td class="text-center"><i class="fa fa-file mx-auto"></i></td>
-                            <td>{{file[0]}}</td>
-                            <td class="text-right">{{file[1]}}</td>
-                        </tr>
+                    <tr v-for="file in filteredFiles" @click="toFile(file[0])" style="cursor: pointer">
+                        <td class="text-center"><i class="fa fa-file mx-auto"></i></td>
+                        <td>{{file[0]}}</td>
+                        <td class="text-right">{{file[1]}}</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <div v-else class="row">
-            <form id="upload" method="POST" enctype="multipart/form-data" action="/">
-                <div class="col-12">
-                    <div class="custom-file float-left">
-                        <input type="file" name="file" class="custom-file-input" id="customFile" @change="changeLabel"
-                               required>
-                        <label class="custom-file-label" for="customFile">{{ fileLabel }}</label>
+        <div v-else class="row mt-2">
+            <div class="col-6 border-right">
+                <h4 class="mb-4">Upload your file</h4>
+                <form id="upload" method="POST" enctype="multipart/form-data" action="/">
+                    <div class="col-12">
+                        <div class="custom-file float-left mb-1">
+                            <input type="file" name="file" class="custom-file-input" id="customFile"
+                                   @change="changeLabel"
+                                   required>
+                            <label class="custom-file-label" for="customFile">{{ fileLabel }}</label>
+                        </div>
+                        <input type="hidden" name="owner" :value="login">
+                        <input type="hidden" name="action" value="encrypt-rsa">
+                        <button type="submit" class="btn btn-dark my-2">Upload</button>
                     </div>
-                    <button type="submit" class="btn btn-secondary">Upload</button>
-                </div>
-            </form>
-            <div>
-                <form id="form" method="POST" enctype="multipart/form-data" action="/">
-                    <table>
-                        <tr>
-                            <td>File to upload:</td>
-                            <td><input type="file" name="file" required/></td>
-                        </tr>
-                        <tr id="keys">
-                            <td>Key to upload:</td>
-                            <td>
-                                <select name="owner">
-                                    <option th:each="user : ${users}" th:value="${user[0]}" th:text="${user[0]}"/>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <select id="action" name="action" onchange="keys_f()">
-                                    <option value="encrypt-rsa">Encrypt</option>
-                                    <option value="decrypt-rsa">Decrypt</option>
-                                </select>
-                            </td>
-                            <td><input type="submit" value="Upload file and key!"/></td>
-                        </tr>
-                    </table>
                 </form>
-                <!--            <div>-->
-                <!--                <p style="font-size: small">Don't lose generated keys, because you will never <br>get to the content of-->
-                <!--                    your-->
-                <!--                    files again... File <br>encrypted with one public key can be decrypted <br>only with sibling private-->
-                <!--                    key!</p>-->
-                <!--            </div>-->
+            </div>
+            <div class="col-6">
                 <form method="post" id="form4" action="/download">
-                    <h3>You can download desktop application to decrypt files on the go!</h3>
-                    <p style="font-size: small">Run with command: java -jar filename.jar</p>
-                    <input type="submit" value="Download app!"/>
+                    <h4>You can download desktop application to decrypt files on the go!</h4>
+                    <p><small>Run with command: java -jar filename.jar</small></p>
+                    <button class="btn btn-dark" type="submit">Download app!</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-<!--<button onclick="myFunction()">Replace document</button>-->
-
 <script src="https://use.fontawesome.com/144775f3f4.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -146,9 +119,9 @@
             search: '',
             upload: false
         },
-        computed:{
-            filteredFiles(){
-                return this.files.filter( file => file[0].includes(this.search))
+        computed: {
+            filteredFiles() {
+                return this.files ? this.files.filter(file => file[0].includes(this.search)) : []
             }
         },
         methods: {
