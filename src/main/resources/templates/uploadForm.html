@@ -64,7 +64,7 @@
                                    required>
                             <label class="custom-file-label" for="customFile">{{ fileLabel }}</label>
                         </div>
-                        <button class="btn btn-dark my-2" @click="uploadFile">Upload</button>
+                        <button class="btn btn-dark my-2" @click="uploadFile" :disabled="file === null" >Upload</button>
                     </div>
             </div>
             <div class="col-6">
@@ -96,7 +96,7 @@
             files: [[${files}]],
             nameOwnerSubOwner: [[${nameOwnerSubOwner}]],
             fileLabel: 'Choose file',
-            file: '',
+            file: null,
             search: '',
             upload: false,
             filtered: false
@@ -125,27 +125,32 @@
                 window.location.href = 'files/' + fileName;
             },
             uploadFile(){
-                let form = document.createElement("form");
-                let fileInput = document.getElementById('customFile');
-                let element1 = document.createElement("input");
-                let element2 = document.createElement("input");
-                let element3 = document.createElement("input");
-                form.classList.add('d-none');
-                form.enctype = 'multipart/form-data';
-                form.method = 'post';
-                form.action = '/';
-                element2.name = 'owner';
-                element2.value = this.login;
-                element3.name = 'action';
-                element3.value = 'encrypt-rsa';
+                if(this.file !== null) {
+                    let form = document.createElement("form");
+                    let fileInput = document.getElementById('customFile');
+                    let element1 = document.createElement("input");
+                    let element2 = document.createElement("input");
+                    let element3 = document.createElement("input");
+                    form.classList.add('d-none');
+                    form.enctype = 'multipart/form-data';
+                    form.method = 'post';
+                    form.action = '/';
+                    element2.name = 'owner';
+                    element2.value = this.login;
+                    element3.name = 'action';
+                    element3.value = 'encrypt-rsa';
 
-                form.appendChild(fileInput);
-                form.appendChild(element1);
-                form.appendChild(element2);
-                form.appendChild(element3);
+                    form.appendChild(fileInput);
+                    form.appendChild(element1);
+                    form.appendChild(element2);
+                    form.appendChild(element3);
 
-                document.body.appendChild(form);
-                form.submit();
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            },
+            downloadApp(){
+
             }
         }
     })
