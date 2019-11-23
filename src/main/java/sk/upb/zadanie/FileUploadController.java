@@ -75,10 +75,10 @@ public class FileUploadController {
 
                     for (Object file_root : files_roots) {
                         List<String> file_data = new ArrayList<>();
-                            file_data.add(file_root.toString());
-                            file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
-                            files.add(file_data);
-                            model.addAttribute("files", files);
+                        file_data.add(file_root.toString());
+                        file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
+                        files.add(file_data);
+                        model.addAttribute("files", files);
                     }
 
                     List<List<String>> users = new ArrayList<>();
@@ -99,18 +99,42 @@ public class FileUploadController {
         return "redirect:/login";
     }
 
+    public boolean isUserOwner(String filename, HttpServletRequest request, String login) {
+        boolean isOwner = false;
+        if (login.equals(storageService.getFileOwner(filename))) {
+            isOwner = true;
+        }
+        return isOwner;
+    }
+
+    public boolean hasPriviledge(String filename, String login) {
+        boolean hasPriviledge = false;
+        List<String[]> privileges_data = storageService.convertCSVToData("privileges.csv");
+        for (String[] row : privileges_data) {
+            if (row[0].equals(filename)) {
+                for (String s : row) {
+                    if (s.equals(login)) {
+                        hasPriviledge = true;
+                    }
+                }
+            }
+        }
+        return hasPriviledge;
+    }
+
     //Toto bude spracovavat podnet na stahovanie suborov, ale treba este pridat parameter toho, co sa to ma stiahnut sifrovane,
     // alebo nie... plus by sa mala preniest informacia o uzivatelovi, ci je lognuty, ci ma prava a hlavne kto to je,
     // lebo vsak potrebujes jeho public key
     @GetMapping({"/download/{filename:.+}"})
     @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename, HttpServletRequest request) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
         Path pathFile = this.storageService.load(filename);
         byte[] bytesOfFile = Files.readAllBytes(pathFile);
         //TODO decrypt rsa - problem, ze tam treba multipart file
         //TODO Navrh, bud zmenit parameter a dat tam get bytes a nejako nacitat file
         Resource fileToDownload = this.encryptionService.decryptRSA(bytesOfFile, serverKeys.getPrivateKey());
-        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
+        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
+
     }
 
     @GetMapping({"/download/crypted/{filename:.+}"})
@@ -120,10 +144,10 @@ public class FileUploadController {
         byte[] bytesOfFile = Files.readAllBytes(pathFile);
         Resource fileToDownload = null;
         if (!cookies.getCookieValue(request, "userName").equals("")) {
-            String publicKey  = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
+            String publicKey = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
             fileToDownload = this.encryptionService.reDecryptRSAWithUsersPublicKey(bytesOfFile, publicKey, serverKeys.getPrivateKey());
         }
-        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
+        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
     }
 
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
@@ -131,7 +155,7 @@ public class FileUploadController {
     public String fileDetail(Model model, HttpServletRequest request, @PathVariable String filename) throws InvalidKeySpecException, NoSuchAlgorithmException {
         List<String[]> users_data = storageService.convertCSVToData("users.csv");
         String allCookies = cookies.readAllCookies(request);
-        if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
+        if (!allCookies.contains("userName=") || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
         }
         List<String> file_data = new ArrayList<>();
@@ -183,7 +207,7 @@ public class FileUploadController {
         return "redirect:/login";
     }
 
-    public static boolean empty( final String s ) {
+    public static boolean empty(final String s) {
         // Null-safe, short-circuit evaluation.
         return s == null || s.trim().isEmpty();
     }
@@ -195,7 +219,7 @@ public class FileUploadController {
 
             List<String[]> comments = storageService.convertCSVToData("comments.csv");
 
-            String[] newLine = {Integer.toString(comments.size()), cookies.getCookieValue(request, "userName"), fileName, newComment} ;
+            String[] newLine = {Integer.toString(comments.size()), cookies.getCookieValue(request, "userName"), fileName, newComment};
             comments.add(newLine);
             storageService.convertDataToCSV(comments, "comments.csv");
         }
@@ -203,7 +227,7 @@ public class FileUploadController {
         return "redirect:/files/" + fileName;
     }
 
-        //TODO zmenit /files/skuska
+    //TODO zmenit /files/skuska
     @PostMapping({"/files/skuska"})
     public String newPrivileges(Model model, HttpServletRequest request, @RequestParam("fileName") String fileName, @RequestParam("owner") String owner, @RequestParam("newPrivileges") String newFileUser) throws InvalidKeySpecException, NoSuchAlgorithmException {
         //overit, ci nie su nahodou null parametre alebo prazdne stringy
@@ -211,7 +235,7 @@ public class FileUploadController {
             //pozriet, ci owner ma fileName,
             List<String[]> data = storageService.convertCSVToData("privileges.csv");
             for (String[] row : data) {
-                if(row[0].equals(fileName) && row[1].equals(owner) && row[2].equals(newFileUser)){
+                if (row[0].equals(fileName) && row[1].equals(owner) && row[2].equals(newFileUser)) {
                     //TODO FrontEnd - Aby sa tento atribut zobrazil na stranke
                     model.addAttribute("error", "Pouzivatel: " + newFileUser + " uz ma prava k suboru: " + fileName);
                     return "redirect:/files/" + fileName;
@@ -221,10 +245,10 @@ public class FileUploadController {
             String login = cookies.getCookieValue(request, "userName");
             String ownerOfFile = storageService.getFileOwner(fileName);
             if (cookies.getCookieValue(request, "userName").equals(storageService.getFileOwner(fileName))) {
-                  //pridat novy riadok do privileges
-                  String[] newLine = {fileName, owner, newFileUser};
-                  data.add(newLine);
-                  this.storageService.convertDataToCSV(data, "privileges.csv");
+                //pridat novy riadok do privileges
+                String[] newLine = {fileName, owner, newFileUser};
+                data.add(newLine);
+                this.storageService.convertDataToCSV(data, "privileges.csv");
             }
         }
         //TODO redirect zatial na / mozno potom zmenit
@@ -233,50 +257,26 @@ public class FileUploadController {
     }
 
 
-
     @PostMapping({"/"})
-    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("owner") String owner, @RequestParam("action") String action, HttpServletRequest request, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("owner") String owner, HttpServletRequest request, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         String filename = "";
-        switch (action) {
-            case "encrypt-rsa":
-                if (!storageService.checkIfFileExist(storageService.load(file.getOriginalFilename()).toString())) {
-                    filename = file.getOriginalFilename();
-                } else {
-                    int i = 1;
-                    while (storageService.checkIfFileExist(storageService.load("(" + i + ")-" + file.getOriginalFilename()).toString())) {
-                        i++;
-                    }
-                    filename = "(" + i + ")-" + file.getOriginalFilename();
-                }
-                storageService.store(file, filename, owner);
-                if (storageService.getUserKey(owner).equals("")) {
-                    System.out.println("Nieco sa pokazilo...");
-                } else {
-                    //TODO zmenit public key na server public key - 16.11.2019 -DNT - done
-                    this.encryptionService.encryptRSA(file, this.storageService.load(filename), serverKeys.getPublicKey());
-                }
-                break;
-//                //TODO DNT - dat prec, po suhlase timu
-//            case "decrypt-rsa":
-//                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
-//                    filename = "Decrypted-" + file.getOriginalFilename();
-//                } else {
-//                    int i = 1;
-//                    while (storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
-//                        i++;
-//                    }
-//                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
-//                }
-//                storageService.store(file, filename, cookies.getCookieValue(request, "userName"));
-//                if (storageService.getUserKey(cookies.getCookieValue(request, "userName")).equals("")) {
-//                    System.out.println("Nieco sa pokazilo...");
-//                } else {
-//                    this.encryptionService.decryptRSA(file, this.storageService.load(filename), owner);
-//                }
-//                break;
-            default:
-                System.out.println("Nieco sa pokazilo...");
+        if (!storageService.checkIfFileExist(storageService.load(file.getOriginalFilename()).toString())) {
+            filename = file.getOriginalFilename();
+        } else {
+            int i = 1;
+            while (storageService.checkIfFileExist(storageService.load("(" + i + ")-" + file.getOriginalFilename()).toString())) {
+                i++;
+            }
+            filename = "(" + i + ")-" + file.getOriginalFilename();
         }
+        storageService.store(file, filename, owner);
+        if (storageService.getUserKey(owner).equals("")) {
+            System.out.println("Nieco sa pokazilo...");
+        } else {
+            //TODO zmenit public key na server public key - 16.11.2019 -DNT - done
+            this.encryptionService.encryptRSA(file, this.storageService.load(filename), serverKeys.getPublicKey());
+        }
+//        System.out.println("Nieco sa pokazilo...");
         redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
         return "redirect:/";
     }
