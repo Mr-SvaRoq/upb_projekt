@@ -98,7 +98,7 @@ public class FileUploadController {
                             }
                         }
 
-                        fileObject.setComments(privilegesOfFile);
+                        fileObject.setAllPrivileges(privilegesOfFile);
 
 
 
