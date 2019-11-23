@@ -49,6 +49,8 @@ public class FileUploadController {
         this.validationHandler = validationHandler;
         this.serverKeys = serverKeys;
     }
+    //TOTO robim prvy krat :D
+    //aj ja :O :O
 
     @GetMapping({"/"})
     public String listUploadedFiles(Model model, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
