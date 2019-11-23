@@ -5,13 +5,14 @@ import java.util.List;
 public class FileObject {
     public String fileName;
     public String fileOwner;
-    public List<String> Comments;
+    public List<String> comments;
+    public List<String> allPrivileges;
 
     public FileObject() {
     }
 
     public void setComments(List<String> comments) {
-        Comments = comments;
+        this.comments = comments;
     }
 
     public void setFileName(String fileName) {
@@ -20,5 +21,9 @@ public class FileObject {
 
     public void setFileOwner(String fileOwner) {
         this.fileOwner = fileOwner;
+    }
+
+    public void setAllPrivileges(List<String> allPrivileges) {
+        this.allPrivileges = allPrivileges;
     }
 }

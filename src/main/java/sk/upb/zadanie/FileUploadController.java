@@ -54,7 +54,7 @@ public class FileUploadController {
     public String listUploadedFiles(Model model, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
         List<String[]> data = storageService.convertCSVToData("users.csv");
         List<String[]> comments = storageService.convertCSVToData("comments.csv");
-        List<String[]> privilages = storageService.convertCSVToData("privileges.csv");
+        List<String[]> privileges = storageService.convertCSVToData("privileges.csv");
 
         String allCookies = cookies.readAllCookies(request);
         if (!allCookies.contains("userName=") || !allCookies.contains("userPassword=")) {
@@ -91,6 +91,17 @@ public class FileUploadController {
                         }
                         fileObject.setComments(fileComments);
 
+                        List<String> privilegesOfFile = new ArrayList<>();
+                        for (String[] privilege : privileges) {
+                            if (privilege[2].equals(fileObject.fileOwner)) {
+                                privilegesOfFile.add(privilege[2]);
+                            }
+                        }
+
+                        fileObject.setComments(privilegesOfFile);
+
+
+
                         files.add(fileObject);
                     }
 
@@ -106,11 +117,11 @@ public class FileUploadController {
                     }
 
                     List<List<String>> nameOwnerSubOwner = new ArrayList<>();
-                    for (String[] privilage : privilages) {
+                    for (String[] privilege : privileges) {
                         List<String> prv = new ArrayList<>();
-                        prv.add(privilage[0]);
-                        prv.add(privilage[1]);
-                        prv.add(privilage[2]);
+                        prv.add(privilege[0]);
+                        prv.add(privilege[1]);
+                        prv.add(privilege[2]);
                         nameOwnerSubOwner.add(prv);
                     }
 
