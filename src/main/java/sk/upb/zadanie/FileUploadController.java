@@ -169,6 +169,8 @@ public class FileUploadController {
     @GetMapping({"/files/{filename:.+}"})
     public String fileDetail(Model model, HttpServletRequest request, @PathVariable String filename) throws InvalidKeySpecException, NoSuchAlgorithmException {
         List<String[]> users_data = storageService.convertCSVToData("users.csv");
+        List<String[]> privileges = storageService.convertCSVToData("privileges.csv");
+
         String allCookies = cookies.readAllCookies(request);
         if (!allCookies.contains("userName=") || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
@@ -210,6 +212,15 @@ public class FileUploadController {
                         users.add(user);
                     }
                     model.addAttribute("users", users);
+
+                    List<String> privilegesOfFile = new ArrayList<>();
+                    for (String[] privilege : privileges) {
+                        if (privilege[0].equals(filename)) {
+                            privilegesOfFile.add(privilege[2]);
+                        }
+                    }
+                    model.addAttribute("privilegesOfFile", privilegesOfFile);
+
 
 //                    counter = 0;
                     return "file";
