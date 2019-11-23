@@ -68,11 +68,9 @@
                     </div>
             </div>
             <div class="col-6">
-                <form method="post" id="form4" action="/download">
                     <h4>You can download desktop application to decrypt files on the go!</h4>
                     <p><small>Run with command: java -jar filename.jar</small></p>
-                    <button class="btn btn-dark" type="submit">Download app!</button>
-                </form>
+                    <button class="btn btn-dark" @click="downloadApp">Download app!</button>
             </div>
         </div>
     </div>
@@ -150,7 +148,12 @@
                 }
             },
             downloadApp(){
-
+                let form = document.createElement("form");
+                form.classList.add('d-none');
+                form.method = 'post';
+                form.action = '/download';
+                document.body.appendChild(form);
+                form.submit();
             }
         }
     })
