@@ -3,7 +3,6 @@ package sk.upb.zadanie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.stereotype.Controller;
@@ -26,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -101,27 +99,29 @@ public class FileUploadController {
         return "redirect:/login";
     }
 
-    public boolean isUserOwner(String filename, HttpServletRequest request, String login) {
-        boolean isOwner = false;
-        if (login.equals(storageService.getFileOwner(filename))) {
-            isOwner = true;
-        }
-        return isOwner;
+    private boolean isUserOwner(String filename, String login) {
+        return login.equals(storageService.getFileOwner(filename));
+//        boolean isOwner = false;
+//        if (login.equals(storageService.getFileOwner(filename))) {
+//            isOwner = true;
+//        }
+//        return isOwner;
     }
 
-    public boolean hasPriviledge(String filename, String login) {
-        boolean hasPriviledge = false;
+    private boolean hasPriviledge(String filename, String login) {
+//        boolean hasPriviledge = false;
         List<String[]> privileges_data = storageService.convertCSVToData("privileges.csv");
         for (String[] row : privileges_data) {
             if (row[0].equals(filename)) {
                 for (String s : row) {
                     if (s.equals(login)) {
-                        hasPriviledge = true;
+//                        hasPriviledge = true;
+                        return true;
                     }
                 }
             }
         }
-        return hasPriviledge;
+        return false;
     }
 
     //Toto bude spracovavat podnet na stahovanie suborov, ale treba este pridat parameter toho, co sa to ma stiahnut sifrovane,
@@ -131,11 +131,9 @@ public class FileUploadController {
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename, HttpServletRequest request) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
         String login = cookies.getCookieValue(request, "userName");
-        if (isUserOwner(filename, request, login) || hasPriviledge(filename, login)) {
+        if (isUserOwner(filename, login) || hasPriviledge(filename, login)) {
             Path pathFile = this.storageService.load(filename);
             byte[] bytesOfFile = Files.readAllBytes(pathFile);
-            //TODO decrypt rsa - problem, ze tam treba multipart file
-            //TODO Navrh, bud zmenit parameter a dat tam get bytes a nejako nacitat file
             Resource fileToDownload = this.encryptionService.decryptRSA(bytesOfFile, serverKeys.getPrivateKey());
             return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
         } else {
@@ -150,7 +148,7 @@ public class FileUploadController {
     @ResponseBody
     public ResponseEntity<Resource> serveCryptedFile(@PathVariable String filename, HttpServletRequest request) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
         String login = cookies.getCookieValue(request, "userName");
-        if (isUserOwner(filename, request, login) || hasPriviledge(filename, login)) {
+        if (isUserOwner(filename, login) || hasPriviledge(filename, login)) {
             Path pathFile = this.storageService.load(filename);
             byte[] bytesOfFile = Files.readAllBytes(pathFile);
             Resource fileToDownload = null;
@@ -202,8 +200,6 @@ public class FileUploadController {
 
                     }
                     model.addAttribute("comments", comments);
-
-
                     List<List<String>> users = new ArrayList<>();
 
                     for (String[] user_data : users_data) {
@@ -212,7 +208,6 @@ public class FileUploadController {
                         users.add(user);
                     }
                     model.addAttribute("users", users);
-
 //                    counter = 0;
                     return "file";
                 } else {
@@ -269,7 +264,6 @@ public class FileUploadController {
             }
         }
         //TODO redirect zatial na / mozno potom zmenit
-        //return stranky, resp redirect
         return "redirect:/files/" + fileName;
     }
 
@@ -290,7 +284,6 @@ public class FileUploadController {
         if (storageService.getUserKey(owner).equals("")) {
             System.out.println("Nieco sa pokazilo...");
         } else {
-            //TODO zmenit public key na server public key - 16.11.2019 -DNT - done
             this.encryptionService.encryptRSA(file, this.storageService.load(filename), serverKeys.getPublicKey());
         }
 //        System.out.println("Nieco sa pokazilo...");
