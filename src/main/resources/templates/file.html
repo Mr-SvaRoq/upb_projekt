@@ -57,15 +57,18 @@
 
 <!--                Rado toto je moja inplementacia komentarov, podla nej prosim urob tu svoju - backend pocita s takymto formatom-->
                 <form method="post" id="form20" action="/files/comment">
+                    <div style="color: red"> TODO IMPLEMENTACIA comments</div>
                     <input type="text" name="newComment" value="" />
-<!--                    Tu akoze bude nejako cez JS pridany nazov suboru -->
+<!--                    Tu akoze bude nejako cez JS pridany nazov suboru  -->
+<!--                    pridanie nazov suboru th:value="${file[1]}"-->
                     <input type="hidden" name="fileName" value="keys.txt" />
                     <input type="submit" value="Comment" />
                 </form>
 
                 <form method="post" id="form7" action="/files/skuska">
-                    <input type="text" name="owner" value= "" />
-                    <input type="text" name="fileName" value= ""  />
+                    <div style="color: red"> TODO IMPLEMENTACIA privilegia</div>
+                    <input type="text" name="owner" th:value="${file[1]}" disabled/>
+                    <input type="text" name="fileName" th:value="${file[0]}" disabled/>
                     <input type="text" name="newPrivileges" value= "Sebo@123456789" />
                     <input type="submit" value="Choose" />
                 </form>
