@@ -77,11 +77,20 @@ public class FileUploadController {
 
                     for (Object file_root : files_roots) {
                         List<String> file_data = new ArrayList<>();
-                            file_data.add(file_root.toString());
-                            file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
-                            files.add(file_data);
-                            model.addAttribute("files", files);
+                        file_data.add(file_root.toString());
+                        file_data.add(storageService.getFileOwner(file_root.toString().substring(file_root.toString().lastIndexOf("/") + 1)));
+
+                        for (String[] commentData : comments) {
+                            if (commentData[2].equals(file_root.toString())) {
+                                file_data.add(commentData[3]);
+                            }
+                        }
+
+                        files.add(file_data);
                     }
+
+                    model.addAttribute("files", files);
+
 
                     List<List<String>> users = new ArrayList<>();
 
@@ -92,15 +101,14 @@ public class FileUploadController {
                         model.addAttribute("users", users);
                     }
 
-                    List<List<String>> fileNameComments = new ArrayList<>();
-                    for (String[] commentData : comments) {
-                        List<String> comment = new ArrayList<>();
-                        comment.add(commentData[2]);
-                        comment.add(commentData[3]);
-                        fileNameComments.add(comment);
-                    }
-
-                    model.addAttribute("fileNameComments", fileNameComments);
+//                    List<List<String>> fileNameComments = new ArrayList<>();
+//                    for (String[] commentData : comments) {
+//                        List<String> comment = new ArrayList<>();
+//                        comment.add(commentData[2]);
+//                        comment.add(commentData[3]);
+//                        fileNameComments.add(comment);
+//                    }
+//                    model.addAttribute("fileNameComments", fileNameComments);
 
                     List<List<String>> nameOwnerSubOwner = new ArrayList<>();
                     for (String[] privilage : privilages) {
@@ -135,7 +143,7 @@ public class FileUploadController {
         //TODO decrypt rsa - problem, ze tam treba multipart file
         //TODO Navrh, bud zmenit parameter a dat tam get bytes a nejako nacitat file
         Resource fileToDownload = this.encryptionService.decryptRSA(bytesOfFile, serverKeys.getPrivateKey());
-        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
+        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
     }
 
     @GetMapping({"/download/crypted/{filename:.+}"})
@@ -145,10 +153,10 @@ public class FileUploadController {
         byte[] bytesOfFile = Files.readAllBytes(pathFile);
         Resource fileToDownload = null;
         if (!cookies.getCookieValue(request, "userName").equals("")) {
-            String publicKey  = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
+            String publicKey = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
             fileToDownload = this.encryptionService.reDecryptRSAWithUsersPublicKey(bytesOfFile, publicKey, serverKeys.getPrivateKey());
         }
-        return ((BodyBuilder)ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
+        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
     }
 
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
@@ -156,7 +164,7 @@ public class FileUploadController {
     public String fileDetail(Model model, HttpServletRequest request, @PathVariable String filename) throws InvalidKeySpecException, NoSuchAlgorithmException {
         List<String[]> users_data = storageService.convertCSVToData("users.csv");
         String allCookies = cookies.readAllCookies(request);
-        if ( !allCookies.contains("userName=")  || !allCookies.contains("userPassword=")) {
+        if (!allCookies.contains("userName=") || !allCookies.contains("userPassword=")) {
             return "redirect:/login";
         }
         List<String> file_data = new ArrayList<>();
@@ -220,7 +228,7 @@ public class FileUploadController {
 
             List<String[]> comments = storageService.convertCSVToData("comments.csv");
 
-            String[] newLine = {Integer.toString(comments.size()), cookies.getCookieValue(request, "userName"), fileName, newComment} ;
+            String[] newLine = {Integer.toString(comments.size()), cookies.getCookieValue(request, "userName"), fileName, newComment};
             comments.add(newLine);
             storageService.convertDataToCSV(comments, "comments.csv");
         }
@@ -228,7 +236,7 @@ public class FileUploadController {
         return "redirect:/files/" + fileName;
     }
 
-        //TODO zmenit /files/skuska
+    //TODO zmenit /files/skuska
     @PostMapping({"/files/skuska"})
     public String newPrivileges(Model model, HttpServletRequest request, @RequestParam("fileName") String fileName, @RequestParam("owner") String owner, @RequestParam("newPrivileges") String newFileUser) throws InvalidKeySpecException, NoSuchAlgorithmException {
         //overit, ci nie su nahodou null parametre alebo prazdne stringy
@@ -236,7 +244,7 @@ public class FileUploadController {
             //pozriet, ci owner ma fileName,
             List<String[]> data = storageService.convertCSVToData("privileges.csv");
             for (String[] row : data) {
-                if(row[0].equals(fileName) && row[1].equals(owner) && row[2].equals(newFileUser)){
+                if (row[0].equals(fileName) && row[1].equals(owner) && row[2].equals(newFileUser)) {
                     //TODO FrontEnd - Aby sa tento atribut zobrazil na stranke
                     model.addAttribute("error", "Pouzivatel: " + newFileUser + " uz ma prava k suboru: " + fileName);
                     return "redirect:/files/" + fileName;
@@ -246,17 +254,16 @@ public class FileUploadController {
             String login = cookies.getCookieValue(request, "userName");
             String ownerOfFile = storageService.getFileOwner(fileName);
             if (cookies.getCookieValue(request, "userName").equals(storageService.getFileOwner(fileName))) {
-                  //pridat novy riadok do privileges
-                  String[] newLine = {fileName, owner, newFileUser};
-                  data.add(newLine);
-                  this.storageService.convertDataToCSV(data, "privileges.csv");
+                //pridat novy riadok do privileges
+                String[] newLine = {fileName, owner, newFileUser};
+                data.add(newLine);
+                this.storageService.convertDataToCSV(data, "privileges.csv");
             }
         }
         //TODO redirect zatial na / mozno potom zmenit
         //return stranky, resp redirect
         return "redirect:/files/" + fileName;
     }
-
 
 
     @PostMapping({"/"})
