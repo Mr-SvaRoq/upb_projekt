@@ -183,7 +183,7 @@ public class FileUploadController {
         return "redirect:/login";
     }
 
-    public static boolean empty( final String s ) {
+    private static boolean empty(final String s) {
         // Null-safe, short-circuit evaluation.
         return s == null || s.trim().isEmpty();
     }
@@ -191,7 +191,7 @@ public class FileUploadController {
     //Zapisovanie komentarov do DB
     @PostMapping({"/files/comment"})
     public String newComment(Model model, HttpServletRequest request, @RequestParam("fileName") String fileName, @RequestParam("newComment") String newComment) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        if (!empty(fileName) && !empty(newComment) && storageService.checkIfFileExist(fileName)) {
+        if (!empty(fileName) && !empty(newComment) && storageService.checkIfFileExist(storageService.load(fileName).toString())) {
 
             List<String[]> comments = storageService.convertCSVToData("comments.csv");
 

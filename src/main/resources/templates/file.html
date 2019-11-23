@@ -61,7 +61,7 @@
                     <input type="text" name="newComment" value="" />
 <!--                    Tu akoze bude nejako cez JS pridany nazov suboru  -->
 <!--                    pridanie nazov suboru th:value="${file[1]}"-->
-                    <input type="hidden" name="fileName" value="keys.txt" />
+                    <input type="hidden" name="fileName" th:value="${file[0]}" />
                     <input type="submit" value="Comment" />
                 </form>
 
@@ -87,6 +87,16 @@
                         <span>{{ comment[0] }}</span>
                     </div>
                     <div class="col-9 my-auto">{{ comment[1] }}</div>
+                </div>
+                <div style="color: red">
+                <div th:each="user : ${comments}" class="row border border-dark rounded mb-2">
+                    <div class="col-3 text-center border-right border-dark py-1" style="word-break: break-all">
+                        <i style="font-size: 1.5rem" class="fa fa-user"></i>
+                        <br>
+                        <span th:text="${user[0]}"></span>
+                    </div>
+                    <div class="col-9 my-auto" th:text="${user[1]}"></div>
+                </div>
                 </div>
             </div>
         </div>
