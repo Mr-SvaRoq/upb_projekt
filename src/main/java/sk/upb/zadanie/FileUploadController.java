@@ -1,6 +1,7 @@
 package sk.upb.zadanie;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
@@ -49,8 +50,6 @@ public class FileUploadController {
         this.validationHandler = validationHandler;
         this.serverKeys = serverKeys;
     }
-    //TOTO robim prvy krat :D
-    //aj ja :O :O
 
     @GetMapping({"/"})
     public String listUploadedFiles(Model model, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
@@ -130,26 +129,39 @@ public class FileUploadController {
     @GetMapping({"/download/{filename:.+}"})
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename, HttpServletRequest request) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
-        Path pathFile = this.storageService.load(filename);
-        byte[] bytesOfFile = Files.readAllBytes(pathFile);
-        //TODO decrypt rsa - problem, ze tam treba multipart file
-        //TODO Navrh, bud zmenit parameter a dat tam get bytes a nejako nacitat file
-        Resource fileToDownload = this.encryptionService.decryptRSA(bytesOfFile, serverKeys.getPrivateKey());
-        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
-
+        String login = cookies.getCookieValue(request, "userName");
+        if (isUserOwner(filename, request, login) || hasPriviledge(filename, login)) {
+            Path pathFile = this.storageService.load(filename);
+            byte[] bytesOfFile = Files.readAllBytes(pathFile);
+            //TODO decrypt rsa - problem, ze tam treba multipart file
+            //TODO Navrh, bud zmenit parameter a dat tam get bytes a nejako nacitat file
+            Resource fileToDownload = this.encryptionService.decryptRSA(bytesOfFile, serverKeys.getPrivateKey());
+            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
+        } else {
+            String errorMessage = "Nemate pravo na tento subor.";
+            Resource resource = new ByteArrayResource(errorMessage.getBytes());
+            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(resource);
+        }
     }
 
     @GetMapping({"/download/crypted/{filename:.+}"})
     @ResponseBody
     public ResponseEntity<Resource> serveCryptedFile(@PathVariable String filename, HttpServletRequest request) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
-        Path pathFile = this.storageService.load(filename);
-        byte[] bytesOfFile = Files.readAllBytes(pathFile);
-        Resource fileToDownload = null;
-        if (!cookies.getCookieValue(request, "userName").equals("")) {
-            String publicKey = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
-            fileToDownload = this.encryptionService.reDecryptRSAWithUsersPublicKey(bytesOfFile, publicKey, serverKeys.getPrivateKey());
+        String login = cookies.getCookieValue(request, "userName");
+        if (isUserOwner(filename, request, login) || hasPriviledge(filename, login)) {
+            Path pathFile = this.storageService.load(filename);
+            byte[] bytesOfFile = Files.readAllBytes(pathFile);
+            Resource fileToDownload = null;
+            if (!cookies.getCookieValue(request, "userName").equals("")) {
+                String publicKey = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
+                fileToDownload = this.encryptionService.reDecryptRSAWithUsersPublicKey(bytesOfFile, publicKey, serverKeys.getPrivateKey());
+            }
+            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
+        } else {
+            String errorMessage = "Nemate pravo na tento subor.";
+            Resource resource = new ByteArrayResource(errorMessage.getBytes());
+            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(resource);
         }
-        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
     }
 
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
@@ -171,7 +183,7 @@ public class FileUploadController {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
                     model.addAttribute("login", cookies.getCookieValue(request, "userName"));
                     List files_roots = this.storageService.loadAll().map((path) -> {
-                        return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
+                        return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString(), request}).build().toString();
                     }).collect(Collectors.toList());
 
                     List<List<String>> comments = new ArrayList<>();
