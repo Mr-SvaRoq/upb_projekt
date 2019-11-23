@@ -156,10 +156,12 @@
             },
             foo() {
                 console.log('files');
-                console.log(this.files);
                 console.log(this.files[0].fileName);
                 console.log(this.files[0].fileOwner);
             }
+        },
+        mounted(){
+            console.log(this.files);
         }
     })
 </script>

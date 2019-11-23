@@ -93,7 +93,7 @@ public class FileUploadController {
 
                         List<String> privilegesOfFile = new ArrayList<>();
                         for (String[] privilege : privileges) {
-                            if (privilege[2].equals(fileObject.fileOwner)) {
+                            if (privilege[1].equals(fileObject.fileOwner)) {
                                 privilegesOfFile.add(privilege[2]);
                             }
                         }
