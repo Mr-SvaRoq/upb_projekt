@@ -113,7 +113,6 @@
             containsComment(comments) {
                 const result = comments.filter(comment => comment.toLowerCase().includes(this.search.toLowerCase()));
                 return result.length > 0;
-
             },
             changeLabel($event) {
                 this.file = $event.target.files[0];
