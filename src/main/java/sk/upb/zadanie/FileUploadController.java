@@ -1,6 +1,7 @@
 package sk.upb.zadanie;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
@@ -64,7 +65,7 @@ public class FileUploadController {
         for (String[] row : data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
-                    model.addAttribute("login", cookies.getCookieValue(request, "userName"));
+                    model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
 
                     //Toto potrebovat nebudeme - minimalne v tejto forme
 
@@ -138,31 +139,70 @@ public class FileUploadController {
         return "redirect:/login";
     }
 
+    private boolean isUserOwner(String filename, String login) {
+        return login.equals(storageService.getFileOwner(filename));
+//        boolean isOwner = false;
+//        if (login.equals(storageService.getFileOwner(filename))) {
+//            isOwner = true;
+//        }
+//        return isOwner;
+    }
+
+    private boolean hasPriviledge(String filename, String login) {
+//        boolean hasPriviledge = false;
+        List<String[]> privileges_data = storageService.convertCSVToData("privileges.csv");
+        for (String[] row : privileges_data) {
+            if (row[0].equals(filename)) {
+                for (String s : row) {
+                    if (s.equals(login)) {
+//                        hasPriviledge = true;
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     //Toto bude spracovavat podnet na stahovanie suborov, ale treba este pridat parameter toho, co sa to ma stiahnut sifrovane,
     // alebo nie... plus by sa mala preniest informacia o uzivatelovi, ci je lognuty, ci ma prava a hlavne kto to je,
     // lebo vsak potrebujes jeho public key
     @GetMapping({"/download/{filename:.+}"})
     @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
-        Path pathFile = this.storageService.load(filename);
-        byte[] bytesOfFile = Files.readAllBytes(pathFile);
-        //TODO decrypt rsa - problem, ze tam treba multipart file
-        //TODO Navrh, bud zmenit parameter a dat tam get bytes a nejako nacitat file
-        Resource fileToDownload = this.encryptionService.decryptRSA(bytesOfFile, serverKeys.getPrivateKey());
-        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename, HttpServletRequest request) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
+        String login = cookies.getCookieValue(request, "userName");
+        if (isUserOwner(filename, login) || hasPriviledge(filename, login)) {
+            Path pathFile = this.storageService.load(filename);
+            byte[] bytesOfFile = Files.readAllBytes(pathFile);
+            Resource fileToDownload = this.encryptionService.decryptRSA(bytesOfFile, serverKeys.getPrivateKey());
+            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Dec-" + filename + "\""})).body(fileToDownload);
+        } else {
+            String errorMessage = "Nemate pravo na tento subor.";
+            Resource resource = new ByteArrayResource(errorMessage.getBytes());
+//            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(resource);
+            return ResponseEntity.noContent().build();
+        }
     }
 
     @GetMapping({"/download/crypted/{filename:.+}"})
     @ResponseBody
     public ResponseEntity<Resource> serveCryptedFile(@PathVariable String filename, HttpServletRequest request) throws IOException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
-        Path pathFile = this.storageService.load(filename);
-        byte[] bytesOfFile = Files.readAllBytes(pathFile);
-        Resource fileToDownload = null;
-        if (!cookies.getCookieValue(request, "userName").equals("")) {
-            String publicKey = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
-            fileToDownload = this.encryptionService.reDecryptRSAWithUsersPublicKey(bytesOfFile, publicKey, serverKeys.getPrivateKey());
+        String login = cookies.getCookieValue(request, "userName");
+        if (isUserOwner(filename, login) || hasPriviledge(filename, login)) {
+            Path pathFile = this.storageService.load(filename);
+            byte[] bytesOfFile = Files.readAllBytes(pathFile);
+            Resource fileToDownload = null;
+            if (!cookies.getCookieValue(request, "userName").equals("")) {
+                String publicKey = storageService.getUserKey(cookies.getCookieValue(request, "userName"));
+                fileToDownload = this.encryptionService.reDecryptRSAWithUsersPublicKey(bytesOfFile, publicKey, serverKeys.getPrivateKey());
+            }
+            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
+        } else {
+            String errorMessage = "Nemate pravo na tento subor.";
+            Resource resource = new ByteArrayResource(errorMessage.getBytes());
+//            return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(resource);
+            return ResponseEntity.noContent().build();
         }
-        return ((BodyBuilder) ResponseEntity.ok().header("Content-Disposition", new String[]{"attachment; filename=\"" + "Crypted-" + filename + "\""})).body(fileToDownload);
     }
 
     //Toto je Radkova podstranka pre konkretny subor - tu sa caka na doplnenie db s komentarmi a pravami
@@ -186,7 +226,7 @@ public class FileUploadController {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
                     model.addAttribute("login", cookies.getCookieValue(request, "userName"));
                     List files_roots = this.storageService.loadAll().map((path) -> {
-                        return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString()}).build().toString();
+                        return MvcUriComponentsBuilder.fromMethodName(FileUploadController.class, "serveFile", new Object[]{path.getFileName().toString(), request}).build().toString();
                     }).collect(Collectors.toList());
 
                     List<List<String>> comments = new ArrayList<>();
@@ -202,8 +242,6 @@ public class FileUploadController {
 
                     }
                     model.addAttribute("comments", comments);
-
-
                     List<List<String>> users = new ArrayList<>();
 
                     for (String[] user_data : users_data) {
@@ -278,54 +316,29 @@ public class FileUploadController {
             }
         }
         //TODO redirect zatial na / mozno potom zmenit
-        //return stranky, resp redirect
         return "redirect:/files/" + fileName;
     }
 
 
     @PostMapping({"/"})
-    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("owner") String owner, @RequestParam("action") String action, HttpServletRequest request, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("owner") String owner, HttpServletRequest request, RedirectAttributes redirectAttributes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException {
         String filename = "";
-        switch (action) {
-            case "encrypt-rsa":
-                if (!storageService.checkIfFileExist(storageService.load(file.getOriginalFilename()).toString())) {
-                    filename = file.getOriginalFilename();
-                } else {
-                    int i = 1;
-                    while (storageService.checkIfFileExist(storageService.load("(" + i + ")-" + file.getOriginalFilename()).toString())) {
-                        i++;
-                    }
-                    filename = "(" + i + ")-" + file.getOriginalFilename();
-                }
-                storageService.store(file, filename, owner);
-                if (storageService.getUserKey(owner).equals("")) {
-                    System.out.println("Nieco sa pokazilo...");
-                } else {
-                    //TODO zmenit public key na server public key - 16.11.2019 -DNT - done
-                    this.encryptionService.encryptRSA(file, this.storageService.load(filename), serverKeys.getPublicKey());
-                }
-                break;
-//                //TODO DNT - dat prec, po suhlase timu
-//            case "decrypt-rsa":
-//                if (!storageService.checkIfFileExist(storageService.load("Decrypted-" + file.getOriginalFilename()).toString())) {
-//                    filename = "Decrypted-" + file.getOriginalFilename();
-//                } else {
-//                    int i = 1;
-//                    while (storageService.checkIfFileExist(storageService.load("Decrypted-(" + i + ")-" + file.getOriginalFilename()).toString())) {
-//                        i++;
-//                    }
-//                    filename = "Decrypted-(" + i + ")-" + file.getOriginalFilename();
-//                }
-//                storageService.store(file, filename, cookies.getCookieValue(request, "userName"));
-//                if (storageService.getUserKey(cookies.getCookieValue(request, "userName")).equals("")) {
-//                    System.out.println("Nieco sa pokazilo...");
-//                } else {
-//                    this.encryptionService.decryptRSA(file, this.storageService.load(filename), owner);
-//                }
-//                break;
-            default:
-                System.out.println("Nieco sa pokazilo...");
+        if (!storageService.checkIfFileExist(storageService.load(file.getOriginalFilename()).toString())) {
+            filename = file.getOriginalFilename();
+        } else {
+            int i = 1;
+            while (storageService.checkIfFileExist(storageService.load("(" + i + ")-" + file.getOriginalFilename()).toString())) {
+                i++;
+            }
+            filename = "(" + i + ")-" + file.getOriginalFilename();
         }
+        storageService.store(file, filename, owner);
+        if (storageService.getUserKey(owner).equals("")) {
+            System.out.println("Nieco sa pokazilo...");
+        } else {
+            this.encryptionService.encryptRSA(file, this.storageService.load(filename), serverKeys.getPublicKey());
+        }
+//        System.out.println("Nieco sa pokazilo...");
         redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
         return "redirect:/";
     }
