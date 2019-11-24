@@ -95,6 +95,8 @@ public class RegisterController {
             System.out.println("Password validated.");
         } else {
             System.out.println("Invalid Password: " + validator.getMessages(result));
+            redirectAttributes.addFlashAttribute("loginBad", "Invalid Password: " + validator.getMessages(result));
+            return "redirect:/register";
         }
 
         //
