@@ -65,7 +65,7 @@ public class FileUploadController {
         for (String[] row : data) {
             if (cookies.getCookieValue(request, "userName").equals(row[0])) {
                 if (validationHandler.validatePassword(cookies.getCookieValue(request, "userPassword"), row[1])) { //ak nesedi databaza a je uz zapisane cookies, cele je to na blb
-                    model.addAttribute("login", "Prihlaseny: " + cookies.getCookieValue(request, "userName"));
+                    model.addAttribute("login", cookies.getCookieValue(request, "userName"));
 
                     //Toto potrebovat nebudeme - minimalne v tejto forme
 
