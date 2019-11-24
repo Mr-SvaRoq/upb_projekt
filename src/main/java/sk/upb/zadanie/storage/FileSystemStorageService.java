@@ -170,7 +170,7 @@ public class FileSystemStorageService implements StorageService {
                 return file_record[1];
             }
         }
-        return "Ja neviem uz...";
+        return null;
     }
 
     @Override

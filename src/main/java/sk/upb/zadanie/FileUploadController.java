@@ -216,8 +216,14 @@ public class FileUploadController {
             return "redirect:/login";
         }
         List<String> file_data = new ArrayList<>();
-        file_data.add(filename);
-        file_data.add(storageService.getFileOwner(filename));
+        String file_owner = storageService.getFileOwner(filename);
+
+        if (file_owner == null) {
+            return "redirect:/";
+        } else {
+            file_data.add(filename);
+            file_data.add(file_owner);
+        }
 
         model.addAttribute("file", file_data);
 
