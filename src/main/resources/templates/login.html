@@ -44,10 +44,16 @@
                                required>
                     </div>
                         <button type="submit" class="btn btn-block btn-secondary pull-right d-block">Sign in</button>
-                    <br><br>
+                    <br>
+                    <br>
                 </form>
                 <hr class="my-1">
-                <a href="/register" class="align-self-center"><small>Dont have an Account?<br> Sign up!</small></a>
+                <a href="/register" class="align-self-center">
+                    <small>Dont have an Account?
+                        <br>
+                        Sign up!
+                    </small>
+                </a>
                 <div v-if="login">
                     <small class="text-danger">User not found</small>
                 </div>
