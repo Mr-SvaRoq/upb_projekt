@@ -101,10 +101,7 @@
                                         <i class="fa fa-lock"></i>
                                     </span>
                                 </div>
-                                <textarea rows="3" placeholder="Public key" class="form-control"
-                                          aria-label="With textarea" readonly>
-                                    {{ publicKey.trim() }}
-                                </textarea>
+                                <textarea rows="3" placeholder="Public key" class="form-control" aria-label="With textarea" readonly>{{ publicKey.trim() }}</textarea>
                             </div>
                         </div>
                         <div v-if="privateKey">
@@ -115,10 +112,7 @@
                                         <i class="fa fa-unlock-alt"></i>
                                     </span>
                                 </div>
-                                <textarea rows="3" placeholder="Private key" class="form-control"
-                                          aria-label="With textarea" readonly>
-                                    {{ privateKey.trim() }}
-                                </textarea>
+                                <textarea rows="3" placeholder="Private key" class="form-control" aria-label="With textarea" readonly>{{ privateKey.trim() }}</textarea>
                             </div>
                         </div>
                         <div v-if="privateKey">
