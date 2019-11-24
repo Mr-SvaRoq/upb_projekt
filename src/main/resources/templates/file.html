@@ -65,7 +65,6 @@
                            style="cursor: pointer"
                            @click="addPrivilege(comment[0])">
                         </i>
-                        <!--           TODO: if user have privilege            -->
                         <i v-if="privileges.includes(comment[0]) && login === file[1]"
                            style="font-size: 1.5rem"
                            class="fa fa-check text-success">

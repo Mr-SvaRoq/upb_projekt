@@ -27,7 +27,8 @@
             <div class="mx-auto w-50">
                 <div v-if="!upload" class="input-group mb-3">
                     <div class="input-group-append">
-                        <button class="btn rounded-left" :class="[filtered ? 'btn-light' : 'btn-dark']" @click="filtered = !filtered"><i class="fa fa-filter"></i></button>
+                        <button class="btn rounded-left" :class="[filtered ? 'btn-light' : 'btn-dark']"
+                                @click="filtered = !filtered"><i class="fa fa-filter"></i></button>
                     </div>
                     <input v-model="search" type="text" class="form-control" placeholder="File & comments search">
                     <div class="input-group-append">
@@ -57,20 +58,20 @@
         <div v-else class="row mt-2">
             <div class="col-6 border-right">
                 <h4 class="mb-4">Upload your file</h4>
-                    <div class="col-12">
-                        <div class="custom-file float-left mb-1">
-                            <input type="file" name="file" class="custom-file-input" id="customFile"
-                                   @change="changeLabel"
-                                   required>
-                            <label class="custom-file-label" for="customFile">{{ fileLabel }}</label>
-                        </div>
-                        <button class="btn btn-dark my-2" @click="uploadFile" :disabled="file === null" >Upload</button>
+                <div class="col-12">
+                    <div class="custom-file float-left mb-1">
+                        <input type="file" name="file" class="custom-file-input" id="customFile"
+                               @change="changeLabel"
+                               required>
+                        <label class="custom-file-label" for="customFile">{{ fileLabel }}</label>
                     </div>
+                    <button class="btn btn-dark my-2" @click="uploadFile" :disabled="file === null">Upload</button>
+                </div>
             </div>
             <div class="col-6">
-                    <h4>You can download desktop application to decrypt files on the go!</h4>
-                    <p><small>Run with command: java -jar filename.jar</small></p>
-                    <button class="btn btn-dark" @click="downloadApp">Download app!</button>
+                <h4>You can download desktop application to decrypt files on the go!</h4>
+                <p><small>Run with command: java -jar filename.jar</small></p>
+                <button class="btn btn-dark" @click="downloadApp">Download app!</button>
             </div>
         </div>
     </div>
@@ -121,8 +122,8 @@
             toFile(fileName) {
                 window.location.href = 'files/' + fileName;
             },
-            uploadFile(){
-                if(this.file !== null) {
+            uploadFile() {
+                if (this.file !== null) {
                     let form = document.createElement("form");
                     let fileInput = document.getElementById('customFile');
                     let element1 = document.createElement("input");
@@ -146,7 +147,7 @@
                     form.submit();
                 }
             },
-            downloadApp(){
+            downloadApp() {
                 let form = document.createElement("form");
                 form.classList.add('d-none');
                 form.method = 'post';
