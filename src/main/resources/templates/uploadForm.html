@@ -13,7 +13,10 @@
     <nav class="navbar navbar-expand navbar-dark bg-dark">
         <div class="collapse navbar-collapse" id="navbarsExample02">
             <span class="ml-auto mr-2">
-                <span><i class="fa fa-user mr-2"></i>{{ login }}</span>
+                <span>
+                    <i class="fa fa-user mr-2"></i>
+                    {{ login }}
+                </span>
             </span>
             <form method="post" id="logout" action="/logOut">
                 <button class="btn btn-outline-light" type="submit">
@@ -27,11 +30,16 @@
             <div class="mx-auto w-50">
                 <div v-if="!upload" class="input-group mb-3">
                     <div class="input-group-append">
-                        <button class="btn rounded-left" :class="[filtered ? 'btn-light' : 'btn-dark']" @click="filtered = !filtered"><i class="fa fa-filter"></i></button>
+                        <button class="btn rounded-left" :class="[filtered ? 'btn-light' : 'btn-dark']"
+                                @click="filtered = !filtered">
+                            <i class="fa fa-filter"></i>
+                        </button>
                     </div>
                     <input v-model="search" type="text" class="form-control" placeholder="File & comments search">
                     <div class="input-group-append">
-                        <span class="input-group-text" id="basic-addon2"><i class="fa fa-search"></i></span>
+                        <span class="input-group-text" id="basic-addon2">
+                            <i class="fa fa-search"></i>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -46,7 +54,9 @@
                 <table class="table table-dark table-striped table-hover">
                     <tbody>
                     <tr v-for="file in filteredFiles" @click="toFile(file.fileName)" style="cursor: pointer">
-                        <td class="text-center"><i class="fa fa-file mx-auto"></i></td>
+                        <td class="text-center">
+                            <i class="fa fa-file mx-auto"></i>
+                        </td>
                         <td>{{file.fileName}}</td>
                         <td class="text-right">{{file.fileOwner}}</td>
                     </tr>
@@ -57,20 +67,20 @@
         <div v-else class="row mt-2">
             <div class="col-6 border-right">
                 <h4 class="mb-4">Upload your file</h4>
-                    <div class="col-12">
-                        <div class="custom-file float-left mb-1">
-                            <input type="file" name="file" class="custom-file-input" id="customFile"
-                                   @change="changeLabel"
-                                   required>
-                            <label class="custom-file-label" for="customFile">{{ fileLabel }}</label>
-                        </div>
-                        <button class="btn btn-dark my-2" @click="uploadFile" :disabled="file === null" >Upload</button>
+                <div class="col-12">
+                    <div class="custom-file float-left mb-1">
+                        <input type="file" name="file" class="custom-file-input" id="customFile"
+                               @change="changeLabel"
+                               required>
+                        <label class="custom-file-label" for="customFile">{{ fileLabel }}</label>
                     </div>
+                    <button class="btn btn-dark my-2" @click="uploadFile" :disabled="file === null">Upload</button>
+                </div>
             </div>
             <div class="col-6">
-                    <h4>You can download desktop application to decrypt files on the go!</h4>
-                    <p><small>Run with command: java -jar filename.jar</small></p>
-                    <button class="btn btn-dark" @click="downloadApp">Download app!</button>
+                <h4>You can download desktop application to decrypt files on the go!</h4>
+                <p><small>Run with command: java -jar filename.jar</small></p>
+                <button class="btn btn-dark" @click="downloadApp">Download app!</button>
             </div>
         </div>
     </div>
@@ -79,13 +89,16 @@
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous">
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous">
+</script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous">
+</script>
 <script th:inline="javascript">
     new Vue({
         el: '#uploadForm',
@@ -121,8 +134,8 @@
             toFile(fileName) {
                 window.location.href = 'files/' + fileName;
             },
-            uploadFile(){
-                if(this.file !== null) {
+            uploadFile() {
+                if (this.file !== null) {
                     let form = document.createElement("form");
                     let fileInput = document.getElementById('customFile');
                     let element1 = document.createElement("input");
@@ -146,7 +159,7 @@
                     form.submit();
                 }
             },
-            downloadApp(){
+            downloadApp() {
                 let form = document.createElement("form");
                 form.classList.add('d-none');
                 form.method = 'post';
